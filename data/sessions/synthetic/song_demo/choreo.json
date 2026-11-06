@@ -1,0 +1,205 @@
+{
+  "format": "jd-choreo",
+  "version": 1,
+  "song": {
+    "title": "Demo sintética",
+    "artist": "jdproto",
+    "audio": "audio.ogg",
+    "video": null,
+    "bpm": 120.0,
+    "offset_s": 0.0,
+    "duration_s": 30.0
+  },
+  "steps": [
+    {
+      "t": 2.0,
+      "dur": 0.5,
+      "limbs": [
+        "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+    },
+    {
+      "t": 3.0,
+      "dur": 0.5,
+      "limbs": [
+        "left_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+    },
+    {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+        "right_hand"
+      ],
+      "icon": "punch_forward",
+      "kind": "accent"
+    },
+    {
+      "t": 5.0,
+      "dur": 0.5,
+      "limbs": [
+        "left_hand"
+      ],
+      "icon": "punch_forward",
+      "kind": "accent"
+    },
+    {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+    },
+    {
+      "t": 7.0,
+      "dur": 2.0,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+    },
+    {
+      "t": 9.5,
+      "dur": 1.5,
+      "limbs": [
+        "right_hand"
+      ],
+      "icon": "pump",
+      "kind": "move"
+    },
+    {
+      "t": 11.5,
+      "dur": 2.0,
+      "limbs": [
+        "left_hand"
+      ],
+      "icon": "circle",
+      "kind": "move"
+    },
+    {
+      "t": 14.0,
+      "dur": 0.5,
+      "limbs": [
+        "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+    },
+    {
+      "t": 14.5,
+      "dur": 0.5,
+      "limbs": [
+        "left_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+    },
+    {
+      "t": 15.0,
+      "dur": 2.0,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "swing",
+      "kind": "move"
+    },
+    {
+      "t": 17.5,
+      "dur": 0.5,
+      "limbs": [
+        "right_hand"
+      ],
+      "icon": "punch_forward",
+      "kind": "accent"
+    },
+    {
+      "t": 18.0,
+      "dur": 1.5,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "pump",
+      "kind": "move"
+    },
+    {
+      "t": 20.0,
+      "dur": 0.5,
+      "limbs": [
+        "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+    },
+    {
+      "t": 21.0,
+      "dur": 0.5,
+      "limbs": [
+        "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+    },
+    {
+      "t": 22.0,
+      "dur": 2.0,
+      "limbs": [
+        "right_foot"
+      ],
+      "icon": "side_step",
+      "kind": "move"
+    },
+    {
+      "t": 24.5,
+      "dur": 0.5,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+    },
+    {
+      "t": 25.0,
+      "dur": 2.0,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+    },
+    {
+      "t": 27.5,
+      "dur": 0.5,
+      "limbs": [
+        "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+    },
+    {
+      "t": 28.0,
+      "dur": 0.5,
+      "limbs": [
+        "left_hand",
+        "right_hand"
+      ],
+      "icon": "punch_forward",
+      "kind": "accent"
+    }
+  ],
+  "references": {
+    "imu": "ref_imu.jsonl"
+  }
+}

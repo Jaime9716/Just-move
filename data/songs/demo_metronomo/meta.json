@@ -1,0 +1,10 @@
+{
+  "source": "generated",
+  "generator": "tools/make_demo_song.py",
+  "personal_use_only": false,
+  "title": "Demo metrónomo",
+  "bpm": 120.0,
+  "offset_s": 1.0,
+  "duration_s": 30.0,
+  "note": "Clics sintéticos y vídeo con contador de beat; libre de derechos."
+}

@@ -1,0 +1,1745 @@
+{
+ "_doc": "Casos compartidos Rust (engine/jd_core/tests/f_choreo.rs) y Python (tools/tests/test_choreo_validate.py). error=null: válido; \"\": cualquier error; texto: subcadena esperada.",
+ "cases": [
+  {
+   "name": "valid_contract_example",
+   "error": null,
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "valid_null_video_no_refs",
+   "error": null,
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": null,
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ]
+   }
+  },
+  {
+   "name": "valid_simultaneous_steps",
+   "error": null,
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.0,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "valid_no_icon_no_artist",
+   "error": null,
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "valid_unknown_fields",
+   "error": null,
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent",
+      "auto": true
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    },
+    "notes": "x"
+   }
+  },
+  {
+   "name": "missing_song",
+   "error": "song: falta",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "missing_steps",
+   "error": "steps: falta",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "missing_bpm",
+   "error": "song.bpm: falta",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "missing_dur",
+   "error": "steps[1].dur: falta",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "missing_limbs",
+   "error": "steps[0].limbs: falta",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "missing_format",
+   "error": "format: falta",
+   "doc": {
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "bad_format",
+   "error": "format: debe ser \"jd-choreo\"",
+   "doc": {
+    "format": "otro",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "bad_version",
+   "error": "version: versión no soportada 2",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 2,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "bpm_string",
+   "error": "song.bpm: debe ser un número",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": "120",
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "bpm_bool",
+   "error": "song.bpm: debe ser un número",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": true,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "bpm_zero",
+   "error": "song.bpm: debe estar en",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "offset_negative",
+   "error": "song.offset_s: debe ser >= 0",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": -1,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "offset_past_end",
+   "error": "song.offset_s: debe ser < song.duration_s",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 200,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "step_past_end",
+   "error": "steps[2].t: t + dur",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 5.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "unordered",
+   "error": "steps[2].t: debe ser >= steps[1].t",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 4.2,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "negative_t",
+   "error": "steps[0].t: debe ser >= 0",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": -4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "negative_dur",
+   "error": "steps[0].dur: debe ser >= 0",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": -0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "unknown_limb",
+   "error": "steps[0].limbs[0]: extremidad desconocida \"head\"",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "head"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "empty_limbs",
+   "error": "steps[0].limbs: no puede estar vacío",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "repeated_limb",
+   "error": "steps[1].limbs[1]: extremidad repetida",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "left_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "limbs_not_list",
+   "error": "steps[0].limbs: debe ser una lista",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": "right_hand",
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "bad_kind",
+   "error": "steps[1].kind: debe ser \"accent\" o \"move\"",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "spin"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "missing_kind",
+   "error": "steps[1].kind: falta",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "icon_number",
+   "error": "steps[1].icon: debe ser texto",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": 3,
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "step_not_object",
+   "error": "steps[1]: debe ser un objeto",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     5,
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "audio_escapes",
+   "error": "song.audio: no puede salir del paquete",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "../../a.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "audio_absolute",
+   "error": "song.audio: debe ser una ruta relativa",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "/a.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "imu_absolute",
+   "error": "references.imu: debe ser una ruta relativa",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "C:/x.jsonl"
+    }
+   }
+  },
+  {
+   "name": "references_not_object",
+   "error": "references: debe ser un objeto",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": "Mi canción",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": []
+   }
+  },
+  {
+   "name": "empty_title",
+   "error": "song.title: no puede estar vacío",
+   "doc": {
+    "format": "jd-choreo",
+    "version": 1,
+    "song": {
+     "title": " ",
+     "artist": "Artista",
+     "audio": "audio.ogg",
+     "video": "video.ogv",
+     "bpm": 120.0,
+     "offset_s": 0.0,
+     "duration_s": 180.0
+    },
+    "steps": [
+     {
+      "t": 4.0,
+      "dur": 0.5,
+      "limbs": [
+       "right_hand"
+      ],
+      "icon": "punch_up",
+      "kind": "accent"
+     },
+     {
+      "t": 4.5,
+      "dur": 1.0,
+      "limbs": [
+       "left_hand",
+       "right_hand"
+      ],
+      "icon": "wave",
+      "kind": "move"
+     },
+     {
+      "t": 6.0,
+      "dur": 0.5,
+      "limbs": [
+       "left_foot",
+       "right_foot"
+      ],
+      "icon": "stomp",
+      "kind": "accent"
+     }
+    ],
+    "references": {
+     "imu": "ref_imu.jsonl"
+    }
+   }
+  },
+  {
+   "name": "root_array",
+   "error": "$: la raíz debe ser un objeto",
+   "raw": "[1,2,3]"
+  },
+  {
+   "name": "corrupt_truncated",
+   "error": "",
+   "raw": "{\"format\": \"jd-choreo\", \"version\": 1, \"song\": {\"title\": \"Mi canci\\u00f3n\", \"artist\": \"Artista\", \"audio\": \"audio.ogg\", \"v"
+  },
+  {
+   "name": "corrupt_not_json",
+   "error": "",
+   "raw": "esto no es json"
+  },
+  {
+   "name": "corrupt_trailing_comma",
+   "error": "",
+   "raw": "{\"format\":\"jd-choreo\",\"version\":1,}"
+  }
+ ]
+}

@@ -1,0 +1,191 @@
+[
+ {
+  "step": 0,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9755400000000005,
+  "timing_error_ms": 2.445999999999948
+ },
+ {
+  "step": 1,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.8337499999999967,
+  "timing_error_ms": 16.625000000000334
+ },
+ {
+  "step": 2,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9262099999999975,
+  "timing_error_ms": 7.3790000000002465
+ },
+ {
+  "step": 3,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.8887400000000003,
+  "timing_error_ms": 11.12599999999997
+ },
+ {
+  "step": 4,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.8858099999999993,
+  "timing_error_ms": 11.419000000000068
+ },
+ {
+  "step": 4,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.876579999999997,
+  "timing_error_ms": 12.342000000000297
+ },
+ {
+  "step": 5,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9964499702648986,
+  "timing_error_ms": 20.0
+ },
+ {
+  "step": 5,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9964795889654202,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 6,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9695091117640477,
+  "timing_error_ms": -40.0
+ },
+ {
+  "step": 7,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9962093597630104,
+  "timing_error_ms": 20.0
+ },
+ {
+  "step": 8,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9828899999999976,
+  "timing_error_ms": 1.71100000000024
+ },
+ {
+  "step": 9,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9359299999999884,
+  "timing_error_ms": 6.407000000001162
+ },
+ {
+  "step": 10,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9929734257045529,
+  "timing_error_ms": -20.0
+ },
+ {
+  "step": 10,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9953755297116356,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 11,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9780499999999961,
+  "timing_error_ms": 2.195000000000391
+ },
+ {
+  "step": 12,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.996035555202466,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 12,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9907752525685964,
+  "timing_error_ms": -20.0
+ },
+ {
+  "step": 13,
+  "limb": "right_foot",
+  "grade": "perfect",
+  "similarity": 0.9733333333333244,
+  "timing_error_ms": 4.000000000001336
+ },
+ {
+  "step": 14,
+  "limb": "right_foot",
+  "grade": "perfect",
+  "similarity": 0.906653333333324,
+  "timing_error_ms": 14.002000000001402
+ },
+ {
+  "step": 15,
+  "limb": "right_foot",
+  "grade": "perfect",
+  "similarity": 0.9822064400472733,
+  "timing_error_ms": 20.0
+ },
+ {
+  "step": 16,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9359199999999959,
+  "timing_error_ms": 6.408000000000413
+ },
+ {
+  "step": 16,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9684200000000089,
+  "timing_error_ms": -3.157999999999106
+ },
+ {
+  "step": 17,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9968853152864382,
+  "timing_error_ms": -20.0
+ },
+ {
+  "step": 17,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.9926603313073898,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 18,
+  "limb": "right_foot",
+  "grade": "perfect",
+  "similarity": 0.9418266666666474,
+  "timing_error_ms": 8.726000000002898
+ },
+ {
+  "step": 19,
+  "limb": "left_hand",
+  "grade": "perfect",
+  "similarity": 0.9601100000000287,
+  "timing_error_ms": -3.9889999999971337
+ },
+ {
+  "step": 19,
+  "limb": "right_hand",
+  "grade": "perfect",
+  "similarity": 0.8293499999999767,
+  "timing_error_ms": 17.06500000000233
+ }
+]

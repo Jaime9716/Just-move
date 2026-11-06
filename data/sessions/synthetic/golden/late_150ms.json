@@ -1,0 +1,191 @@
+[
+ {
+  "step": 0,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 1,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 2,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 3,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 4,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 4,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 5,
+  "limb": "left_hand",
+  "grade": "good",
+  "similarity": 0.7131286775543022,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 5,
+  "limb": "right_hand",
+  "grade": "good",
+  "similarity": 0.8226878092464329,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 6,
+  "limb": "right_hand",
+  "grade": "good",
+  "similarity": 0.9055455519651046,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 7,
+  "limb": "left_hand",
+  "grade": "good",
+  "similarity": 0.8209788281690823,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 8,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 9,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 10,
+  "limb": "left_hand",
+  "grade": "good",
+  "similarity": 0.9032042210471658,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 10,
+  "limb": "right_hand",
+  "grade": "good",
+  "similarity": 0.8134063690054645,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 11,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 12,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.4904877855415358,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 12,
+  "limb": "right_hand",
+  "grade": "good",
+  "similarity": 0.7533692172580566,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 13,
+  "limb": "right_foot",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 14,
+  "limb": "right_foot",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 15,
+  "limb": "right_foot",
+  "grade": "good",
+  "similarity": 0.7474533097906975,
+  "timing_error_ms": 140.0
+ },
+ {
+  "step": 16,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 16,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 17,
+  "limb": "left_hand",
+  "grade": "good",
+  "similarity": 0.9401650114198639,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 17,
+  "limb": "right_hand",
+  "grade": "good",
+  "similarity": 0.8359342001600446,
+  "timing_error_ms": 100.0
+ },
+ {
+  "step": 18,
+  "limb": "right_foot",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 19,
+  "limb": "left_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ },
+ {
+  "step": 19,
+  "limb": "right_hand",
+  "grade": "miss",
+  "similarity": 0.0,
+  "timing_error_ms": 0.0
+ }
+]
