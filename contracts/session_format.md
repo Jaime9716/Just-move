@@ -10,8 +10,8 @@ Archivo de texto UTF-8, **JSON Lines** (`.jsonl`). Línea 1 = cabecera; resto = 
  "song_id":"mi_cancion",        // o null
  "recorded_at":"2026-11-06T20:00:00Z",
  "note":"bien bailado, manos",  // texto libre
- "devices":[{"source_id":1,"name":"Joy-Con (L)","kind":"joycon","limb":"left_hand"},
-            {"source_id":2,"name":"Joy-Con (R)","kind":"joycon","limb":"right_hand"}]}
+ "devices":[{"source_id":1,"name":"Pixel 7","kind":"phone","limb":"left_hand"},
+            {"source_id":2,"name":"Galaxy S23","kind":"phone","limb":"right_hand"}]}
 ```
 
 ## Muestra (resto de líneas)

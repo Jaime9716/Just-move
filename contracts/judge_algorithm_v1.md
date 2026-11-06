@@ -1,4 +1,9 @@
-# Contrato · Algoritmo del juez v1 (B3 → B4 → B5)
+# Contrato · Algoritmo del juez v1.1 (B3 → B4 → B5)
+
+> **v1.1 (arquitecto):** la búsqueda de desfase de los pasos *move* cubre `±LAG_SEARCH_SCALE·gw`
+> (antes ±gw); la nota sigue usando `pw`/`gw`. Así un retraso de 150 ms da Miss en vez de saturar en Good.
+> Las precisiones de `proto/ALGORITHM.md` §1 (inicialización, tramas por índice, criterio de pico,
+> desempates) son normativas.
 
 El agente **B** lo implementa en Python (`proto/jdproto/`) y lo ajusta con datos; el agente **C** lo
 implementa en Rust (`engine/jd_core`) con **los mismos parámetros**. Si B propone cambios, los documenta en
@@ -24,6 +29,7 @@ implementa en Rust (`engine/jd_core`) con **los mismos parámetros**. Si B propo
 | NOREF_ENERGY_FULL | 6.0 m/s² |
 | PERFECT_SIM / GOOD_SIM | 0.75 / 0.5 |
 | EMIT_MARGIN_S | 0.05 |
+| LAG_SEARCH_SCALE | 2.0 |
 
 ## B3 · Señal (por extremidad; cada `limb` tiene su propio estado)
 
@@ -58,7 +64,7 @@ implementa en Rust (`engine/jd_core`) con **los mismos parámetros**. Si B propo
 `similarity = max(0, 1 − |err|/gw)`, `timing_error_ms = err·1000`.
 
 **Move con referencia** (hay tramas de referencia de esa extremidad):
-- Series en `[t, t+dur]`: `E_r`, `D_r` (referencia) y, para cada desfase `L ∈ {−gw … +gw}` en pasos
+- Series en `[t, t+dur]`: `E_r`, `D_r` (referencia) y, para cada desfase `L ∈ {−LAG_SEARCH_SCALE·gw … +LAG_SEARCH_SCALE·gw}` en pasos
   de FRAME_HOP_S, `E_p(L)`, `D_p(L)` del jugador en `[t+L, t+dur+L]` (emparejando trama a trama).
 - `ncc` = correlación normalizada de media cero de E_r y E_p (0 si alguna varianza < 1e-6), recortada a [0,1].
 - `dcos` = media del coseno entre D_r y D_p en tramas donde ambas son no nulas, recortada a [0,1];
@@ -72,7 +78,8 @@ implementa en Rust (`engine/jd_core`) con **los mismos parámetros**. Si B propo
 Good si ≥ GOOD_SIM, si no Miss (nunca Perfect). `timing_error_ms = 0`.
 
 **Emisión:** el resultado de un paso se emite en el primer `update(song_time)` con
-`song_time ≥ t + dur + gw_escalado + EMIT_MARGIN_S`, en orden de paso y luego de extremidad
+`song_time ≥ t + dur + LAG_SEARCH_SCALE·gw_escalado + EMIT_MARGIN_S` (en tiempo real el motor puede
+esperar hasta 0.5 s más mientras llegan las tramas de esa extremidad), en orden de paso y luego de extremidad
 (left_hand, right_hand, left_foot, right_foot).
 
 ## API del prototipo Python (agente B; la usa T1 en `proto/tests/`)
