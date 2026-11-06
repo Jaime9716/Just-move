@@ -1,0 +1,7 @@
+build/
+__pycache__/
+*.pyc
+.godot/
+*.import
+data/songs/*/audio.ogg
+data/songs/*/video.ogv

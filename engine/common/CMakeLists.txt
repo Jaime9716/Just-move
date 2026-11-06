@@ -1,0 +1,7 @@
+add_library(jd_common STATIC json.cpp common.cpp)
+target_include_directories(jd_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/contracts)
+if(JD_BUILD_TESTS)
+  add_executable(jd_common_tests tests/json_test.cpp)
+  target_link_libraries(jd_common_tests PRIVATE jd_common)
+  add_test(NAME jd_common_tests COMMAND jd_common_tests)
+endif()
