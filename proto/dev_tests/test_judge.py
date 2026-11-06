@@ -129,13 +129,15 @@ def test_move_window_keys():
 
 def test_emit_time():
     st = {"t": 2.0, "dur": 0.5}
-    assert judge.emit_time(st, "right_hand") == pytest.approx(2.0 + 0.5 + 0.1 + 0.05)
-    assert judge.emit_time(st, "right_foot") == pytest.approx(2.0 + 0.5 + 0.15 + 0.05)
+    # v1.1: t + dur + LAG_SEARCH_SCALE·gw_escalado + EMIT_MARGIN_S
+    assert judge.emit_time(st, "right_hand") == pytest.approx(2.0 + 0.5 + 0.2 + 0.05)
+    assert judge.emit_time(st, "right_foot") == pytest.approx(2.0 + 0.5 + 0.3 + 0.05)
+    assert judge.emit_time(st, "right_hand", {"variant": "v1"}) == pytest.approx(2.0 + 0.5 + 0.1 + 0.05)
 
 
-def test_variant_v1b_lag_range():
+def test_lag_range_v11_default_vs_v1():
     c, pl, ref = _move_case(7)  # 140 ms tarde
-    v1 = judge.judge_steps(c, pl, ref, CFG)[0]
-    v1b = judge.judge_steps(c, pl, ref, merge_config({"variant": "v1b"}))[0]
-    assert v1["timing_error_ms"] == pytest.approx(100.0)
-    assert v1b["timing_error_ms"] == pytest.approx(140.0) and v1b["grade"] == "miss"
+    v11 = judge.judge_steps(c, pl, ref, CFG)[0]
+    v1 = judge.judge_steps(c, pl, ref, merge_config({"variant": "v1"}))[0]
+    assert v1["timing_error_ms"] == pytest.approx(100.0) and v1["grade"] == "good"
+    assert v11["timing_error_ms"] == pytest.approx(140.0) and v11["grade"] == "miss"

@@ -58,9 +58,9 @@
  {
   "step": 6,
   "limb": "right_hand",
-  "grade": "good",
-  "similarity": 0.9661943301682494,
-  "timing_error_ms": -100.0
+  "grade": "miss",
+  "similarity": 0.9695091117640476,
+  "timing_error_ms": -120.0
  },
  {
   "step": 7,

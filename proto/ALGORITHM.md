@@ -1,12 +1,13 @@
-# Juez v1 en el prototipo Python: precisiones, problemas y variante propuesta
+# Juez v1.1 en el prototipo Python: precisiones, historia de v1 → v1.1
 
-`proto/jdproto/` implementa **contracts/judge_algorithm_v1.md tal cual**. Los golden de
-`data/sessions/synthetic/golden/` están generados con **v1** (config por defecto). Este documento
-recoge (1) las decisiones que el contrato deja abiertas y que el motor Rust (agente C) debe copiar para
-reproducir los golden, (2) los problemas encontrados con los datos sintéticos y (3) la variante
-propuesta **v1b**, disponible por configuración (no cambia el contrato).
+`proto/jdproto/` implementa **contracts/judge_algorithm_v1.md v1.1** (config por defecto,
+`lag_search_scale = 2.0`). Los golden de `data/sessions/synthetic/golden/` están generados con **v1.1**.
+El contrato anterior sigue accesible con `config={"variant": "v1"}` (o `lag_search_scale = 1.0`;
+`--variant v1` en el CLI). Por decisión del arquitecto, la **§1 de este documento es normativa**: el
+motor Rust (agente C) debe seguirla para reproducir los golden. La §2–§3 cuentan el problema de v1 que
+motivó v1.1.
 
-## 1. Precisiones de implementación (el contrato no las fija)
+## 1. Precisiones de implementación (normativas desde v1.1)
 
 ### B3 · Señal
 - `t_song = round(t·1e9)·1e-9 + mono_to_song_s` (en f64), igual que `t_ns` del motor.
@@ -49,8 +50,8 @@ propuesta **v1b**, disponible por configuración (no cambia el contrato).
   Miss → `similarity = 0`, `timing_error_ms = 0`.
 - **Ventana de un move:** tramas con `k ∈ [ceil(t/hop − 1e-6), floor((t+dur)/hop + 1e-6)]`.
   "Hay referencia" ⇔ existe al menos una trama de referencia de esa extremidad en esa ventana.
-- Desfases `L = m·hop`, `|m| ≤ floor(gw·lag_search_scale/hop + 1e-6)` (v1: `lag_search_scale = 1`;
-  manos m ∈ [−5, 5], pies m ∈ [−7, 7]). Orden de evaluación `m = 0, −1, +1, −2, +2, …`; un desfase solo
+- Desfases `L = m·hop`, `|m| ≤ floor(LAG_SEARCH_SCALE·gw/hop + 1e-6)` (v1.1: `LAG_SEARCH_SCALE = 2`,
+  manos m ∈ [−10, 10], pies m ∈ [−15, 15]; v1: [−5, 5] y [−7, 7]). La nota sigue usando pw/gw. Orden de evaluación `m = 0, −1, +1, −2, +2, …`; un desfase solo
   sustituye al mejor si su score es **estrictamente mayor** (empate → menor |L|, y a igual |L| el negativo).
 - Emparejado: pares (ref `k`, jugador `k+m`) solo donde existen ambas tramas. Sin pares → score 0.
 - `ncc`: medias y varianzas poblacionales; si `var_r < 1e-6` o `var_p < 1e-6` → 0; si no
@@ -60,15 +61,16 @@ propuesta **v1b**, disponible por configuración (no cambia el contrato).
   si `0.25·mean(E_r) > 0` y `mean(E_p) < 0.25·mean(E_r)` → `score *= mean(E_p)/(0.25·mean(E_r))`.
 - Move sin referencia: media de `energy` de las tramas del jugador en la ventana (0 si no hay).
 - Todas las comparaciones de ventanas de tiempo usan tolerancia 1e-9 s (los umbrales de similitud no).
+- Emisión (v1.1): `t + dur + LAG_SEARCH_SCALE·gw_escalado + EMIT_MARGIN_S` (`judge.emit_time()`).
 
 ### Precisión numérica (para comparar con Rust)
 Python calcula todo en f64. Si Rust guarda `FilteredSample`/`FeatureFrame` en f32 los resultados
 difieren en ~1e-5: compara `similarity` y `timing_error_ms` con tolerancia (p. ej. 1e-3 y 0.01 ms) y
-el `grade` exacto. En los golden el margen mínimo de una similitud a un umbral que cambie la nota es
-0.003 (perfect_noref) y la diferencia mínima entre el mejor y el segundo mejor desfase, cuando no son
-empates exactos a 0, es 6e-4 (wrong_moves): suficiente para f32.
+el `grade` exacto. En los golden v1.1 el margen mínimo de una similitud a un umbral que cambie la nota
+es 0.003 (perfect_noref) y la diferencia mínima entre el mejor y el segundo mejor desfase, cuando no son
+empates exactos a 0, es 3e-4 (wrong_moves, paso 6): suficiente para f32, pero es el caso a vigilar.
 
-## 2. Comportamientos de docs/06 con v1 (datos sintéticos)
+## 2. Comportamientos de docs/06 con v1 (contrato anterior; datos sintéticos)
 
 | Sesión | Esperado (docs/06) | v1 P/G/M | ¿Cumple? |
 |---|---|---|---|
@@ -106,18 +108,14 @@ En los pies pasa igual (gw = 150 ms → L* = 140 ms → Good), aunque ahí 150 m
   hecho es ~1.0 y la de uno equivocado ~0.25. Con personas reales las similitudes serán menores; los
   umbrales `PERFECT_SIM/GOOD_SIM` hay que ajustarlos con sesiones reales (T3, docs/07).
 
-## 3. Variante propuesta v1b
+## 3. v1.1 (antes "variante v1b", adoptada por el arquitecto)
 
-**Cambio único:** buscar `L` en `±lag_search_scale·gw` con `lag_search_scale = 2` (manos ±200 ms,
-pies ±300 ms), manteniendo la regla de nota (`|L*| ≤ pw` Perfect, `|L*| ≤ gw` Good, si no Miss).
-Así el juez encuentra el desfase real y, si es mayor que gw, da Miss. Coste: el doble de desfases
-(21 en lugar de 11 por move y extremidad), despreciable.
+**Cambio único:** buscar `L` en `±LAG_SEARCH_SCALE·gw` con `LAG_SEARCH_SCALE = 2` (manos ±200 ms,
+pies ±300 ms), manteniendo la regla de nota (`|L*| ≤ pw` Perfect, `|L*| ≤ gw` Good, si no Miss), y
+retrasar la emisión a `t + dur + LAG_SEARCH_SCALE·gw + EMIT_MARGIN_S`. Así el juez encuentra el
+desfase real y, si es mayor que gw, da Miss. Coste: 21 desfases en lugar de 11 por move y extremidad.
 
-Uso: `config={"variant": "v1b"}` o `config={"lag_search_scale": 2.0}` en `judge_song`;
-`--variant v1b` en el CLI. En Rust sería un campo más de configuración interna (no hace falta tocar
-`JD_JudgeConfig` si se fija la constante).
-
-| Sesión | v1 P/G/M | v1b P/G/M |
+| Sesión | v1 P/G/M | v1.1 P/G/M (golden) |
 |---|---|---|
 | perfect | 27/0/0 | 27/0/0 |
 | late_40ms | 20/7/0 | 20/7/0 |
@@ -131,8 +129,6 @@ Uso: `config={"variant": "v1b"}` o `config={"lag_search_scale": 2.0}` en `judge_
 
 El único cambio fuera de late_150ms es early_80ms paso 6 (pump, mano derecha): el jugador de esa
 ejecución ya iba 40 ms adelantado respecto a la referencia, así que el desfase real es −120 ms; v1 lo
-recortaba a −100 ms (Good) y v1b lo mide bien (Miss). Es el comportamiento buscado.
+recortaba a −100 ms (Good) y v1.1 lo mide bien (Miss). Es el comportamiento buscado.
 
-**Recomendación al arquitecto:** adoptar v1b como v2 (o subir `lag_search_scale` a 2 en v1.1), y
-regenerar los golden con `python3 proto/synth.py` tras cambiar el valor por defecto en
-`proto/jdproto/config.py`.
+Regenerar los golden: `python3 proto/synth.py` (añade `--variant v1` para ver también la tabla v1).

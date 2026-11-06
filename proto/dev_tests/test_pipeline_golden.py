@@ -76,21 +76,22 @@ def test_late_150_accents_miss(data):
     assert all(r["grade"] == "miss" for r in hands)
 
 
-def test_late_150_v1_moves_not_miss_documented(data):
-    """Problema conocido de v1 (proto/ALGORITHM.md): los moves 150 ms tarde dan Good."""
+def test_late_150_all_miss(data):
+    """v1.1: retraso de 150 ms → Miss también en los moves."""
+    assert _frac(data[1]("late_150ms"), {"miss"}) == 1.0
+
+
+def test_late_150_v1_moves_not_miss(data):
+    """Problema de v1 que motivó v1.1 (proto/ALGORITHM.md): los moves 150 ms tarde dan Good."""
     c, run = data
-    moves = [r for r in run("late_150ms") if c["steps"][r["step"]]["kind"] == "move"]
+    moves = [r for r in run("late_150ms", "v1") if c["steps"][r["step"]]["kind"] == "move"]
     assert any(r["grade"] != "miss" for r in moves)
 
 
-def test_late_150_v1b_all_miss(data):
-    assert _frac(data[1]("late_150ms", "v1b"), {"miss"}) == 1.0
-
-
-def test_v1b_keeps_good_sessions(data):
+def test_v1_and_v11_agree_on_good_sessions(data):
     _, run = data
-    assert summarize(run("perfect", "v1b")) == summarize(run("perfect"))
-    assert _frac(run("late_40ms", "v1b"), {"perfect", "good"}) == 1.0
+    assert summarize(run("perfect", "v1")) == summarize(run("perfect"))
+    assert _frac(run("late_40ms", "v1"), {"perfect", "good"}) == 1.0
 
 
 def test_foot_only(data):
@@ -158,8 +159,9 @@ def test_synth_gyro_coherent_with_accel():
 
 
 def test_config_merge():
-    cfg = merge_config({"PEAK_MIN": 9, "variant": "v1b"})
-    assert cfg["peak_min"] == 9.0 and cfg["lag_search_scale"] == 2.0
+    assert merge_config()["lag_search_scale"] == 2.0  # v1.1 por defecto
+    cfg = merge_config({"PEAK_MIN": 9, "variant": "v1"})
+    assert cfg["peak_min"] == 9.0 and cfg["lag_search_scale"] == 1.0
     with pytest.raises(ValueError):
         merge_config({"nope": 1})
 

@@ -108,15 +108,15 @@
   "step": 12,
   "limb": "left_hand",
   "grade": "miss",
-  "similarity": 0.003673543965432577,
-  "timing_error_ms": 60.0
+  "similarity": 0.005321372201815917,
+  "timing_error_ms": 200.0
  },
  {
   "step": 12,
   "limb": "right_hand",
   "grade": "miss",
-  "similarity": 0.011856588117299184,
-  "timing_error_ms": 20.0
+  "similarity": 0.016871964499380346,
+  "timing_error_ms": -200.0
  },
  {
   "step": 13,
@@ -136,8 +136,8 @@
   "step": 15,
   "limb": "right_foot",
   "grade": "miss",
-  "similarity": 0.014614528428489948,
-  "timing_error_ms": -40.0
+  "similarity": 0.01925054447321436,
+  "timing_error_ms": -220.0
  },
  {
   "step": 16,
@@ -157,8 +157,8 @@
   "step": 17,
   "limb": "left_hand",
   "grade": "miss",
-  "similarity": 0.0,
-  "timing_error_ms": 0.0
+  "similarity": 0.013305053360894947,
+  "timing_error_ms": 200.0
  },
  {
   "step": 17,

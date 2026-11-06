@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(ROOT, "data", "sessions", "synthetic"))
-    ap.add_argument("--variant", default=None, help="solo para la tabla de consola; los golden son v1")
+    ap.add_argument("--variant", default=None, help="solo para la tabla de consola (p. ej. v1); los golden son el defecto (v1.1)")
     args = ap.parse_args(argv)
 
     song_dir = os.path.join(args.out, "song_demo")
@@ -44,7 +44,7 @@ def main(argv=None):
         write_session(os.path.join(args.out, name + ".jsonl"), synth.session_header(kw["limbs"], note),
                       synth.render_session(choreo, **kw))
 
-    # golden (v1) a partir de los archivos escritos
+    # golden (v1.1, config por defecto) a partir de los archivos escritos
     choreo = load_choreo(song_dir)
     ref = load_session(os.path.join(song_dir, "ref_imu.jsonl"))["samples"]
     print(f"{'sesión':<14} {'perfect':>7} {'good':>5} {'miss':>5}")

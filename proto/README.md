@@ -1,6 +1,6 @@
 # proto/ · Prototipo Python del juez (H0)
 
-Implementación de referencia de **contracts/judge_algorithm_v1.md** (bloques B3 señal, B4 rasgos,
+Implementación de referencia de **contracts/judge_algorithm_v1.md v1.1** (bloques B3 señal, B4 rasgos,
 B5 juez) más un generador de datos sintéticos de **móvil Android en la mano** (y en el pie).
 Sus salidas en `data/sessions/synthetic/golden/` son las que el motor Rust (agente C) debe reproducir.
 
@@ -9,7 +9,7 @@ Requisitos: Python 3.11+ y numpy (pytest para los tests). Sin más dependencias.
 ```
 proto/
   jdproto/            paquete (API del contrato)
-    config.py         constantes v1 + variantes ("v1b") + merge_config()
+    config.py         constantes v1.1 + variante "v1" (anterior) + merge_config()
     session.py        load_session()            (contracts/session_format.md)
     choreo.py         load_choreo()             (contracts/song_package.md, con validación)
     signal.py         B3: paso bajo, orientación, lin_accel
@@ -20,7 +20,7 @@ proto/
     synth.py          modelo de movimiento del móvil y sesiones sintéticas
   synth.py            script que regenera data/sessions/synthetic/ (determinista)
   dev_tests/          tests propios (proto/tests/ es de T1)
-  ALGORITHM.md        precisiones de v1, problemas encontrados y variante v1b
+  ALGORITHM.md        precisiones normativas, problema de v1 y cambio a v1.1
 ```
 
 ## Ejecutar
@@ -28,7 +28,7 @@ proto/
 ```bash
 cd <repo>
 python3 proto/synth.py                       # regenera canción demo, sesiones y golden (≈10 s)
-python3 proto/synth.py --variant v1b         # igual, y muestra también la tabla con v1b
+python3 proto/synth.py --variant v1          # igual, y muestra también la tabla con v1 (anterior)
 python3 -m pytest -q proto/dev_tests         # tests propios (≈5 s)
 
 # juzgar una sesión (tabla legible o JSON = formato golden)
@@ -38,7 +38,7 @@ PYTHONPATH=proto python3 -m jdproto.judge_cli data/sessions/synthetic/song_demo 
     data/sessions/synthetic/late_40ms.jsonl --json
 ```
 
-Opciones extra del CLI: `--no-ref` (ignora `ref_imu.jsonl`), `--variant v1b`, `--config cfg.json`
+Opciones extra del CLI: `--no-ref` (ignora `ref_imu.jsonl`), `--variant v1` (contrato anterior), `--config cfg.json`
 (claves de `jdproto.config.DEFAULT_CONFIG`, p. ej. `{"peak_min": 9}`), `--offset S` (ver abajo).
 
 Desde Python:
@@ -50,7 +50,7 @@ from jdproto.pipeline import judge_song
 c = load_choreo("data/sessions/synthetic/song_demo")
 ref = load_session("data/sessions/synthetic/song_demo/ref_imu.jsonl")["samples"]
 me = load_session("data/sessions/synthetic/perfect.jsonl")["samples"]
-res = judge_song(c, me, ref, None)            # o {"variant": "v1b"}, {"PEAK_MIN": 9}, ...
+res = judge_song(c, me, ref, None)            # o {"variant": "v1"}, {"PEAK_MIN": 9}, ...
 ```
 
 ## Juzgar una sesión real grabada con `jd_record`
@@ -77,7 +77,7 @@ res = judge_song(c, me, ref, None)            # o {"variant": "v1b"}, {"PEAK_MIN
 `punch_forward`, `stomp`; moves `wave`, `pump`, `circle`, `swing`, `side_step`; manos y pie derecho;
 `ref_imu.jsonl` con 3 móviles). Sesiones del jugador (3 móviles: mano izq., mano der., pie der.):
 `perfect`, `late_40ms`, `late_150ms`, `early_80ms`, `wrong_moves`, `still`, `noisy`, `foot_only`
-(1 móvil en el pie). `golden/<sesión>.json` = salida de `judge_song` con v1 (+ `perfect_noref.json`,
+(1 móvil en el pie). `golden/<sesión>.json` = salida de `judge_song` con v1.1 (+ `perfect_noref.json`,
 la sesión perfect sin referencia). El modelo físico está descrito en `jdproto/synth.py`.
 
 Las marcas de tiempo llevan una fase por dispositivo y jitter (±0.4 ms) para que ninguna muestra caiga

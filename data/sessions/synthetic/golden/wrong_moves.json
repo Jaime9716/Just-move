@@ -59,15 +59,15 @@
   "step": 6,
   "limb": "right_hand",
   "grade": "miss",
-  "similarity": 0.1918619317452335,
-  "timing_error_ms": -100.0
+  "similarity": 0.275169604155727,
+  "timing_error_ms": -160.0
  },
  {
   "step": 7,
   "limb": "left_hand",
   "grade": "miss",
-  "similarity": 0.24960366554659583,
-  "timing_error_ms": -100.0
+  "similarity": 0.3583124091421837,
+  "timing_error_ms": -200.0
  },
  {
   "step": 8,
@@ -87,15 +87,15 @@
   "step": 10,
   "limb": "left_hand",
   "grade": "miss",
-  "similarity": 0.25161850679198405,
-  "timing_error_ms": 100.0
+  "similarity": 0.29378706768231444,
+  "timing_error_ms": 140.0
  },
  {
   "step": 10,
   "limb": "right_hand",
   "grade": "miss",
-  "similarity": 0.27863062499764796,
-  "timing_error_ms": 100.0
+  "similarity": 0.307282649569649,
+  "timing_error_ms": 140.0
  },
  {
   "step": 11,
@@ -108,15 +108,15 @@
   "step": 12,
   "limb": "left_hand",
   "grade": "miss",
-  "similarity": 0.22760998606477692,
-  "timing_error_ms": -100.0
+  "similarity": 0.24781975622888464,
+  "timing_error_ms": -120.0
  },
  {
   "step": 12,
   "limb": "right_hand",
   "grade": "miss",
-  "similarity": 0.17096043870431832,
-  "timing_error_ms": 80.0
+  "similarity": 0.27328621558440125,
+  "timing_error_ms": -160.0
  },
  {
   "step": 13,

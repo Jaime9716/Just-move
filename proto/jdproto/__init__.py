@@ -1,6 +1,6 @@
-"""jdproto · prototipo Python del juez v1 (bloques B3–B5).
+"""jdproto · prototipo Python del juez v1.1 (bloques B3–B5).
 
-Implementa contracts/judge_algorithm_v1.md. Módulos:
+Implementa contracts/judge_algorithm_v1.md (v1.1). Módulos:
   config   constantes por defecto y fusión de configuración
   session  carga de sesiones .jsonl (contracts/session_format.md)
   choreo   carga y validación de choreo.json (contracts/song_package.md)

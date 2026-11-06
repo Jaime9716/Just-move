@@ -1,8 +1,8 @@
-"""B5 · Juez v1 (contracts/judge_algorithm_v1.md §B5).
+"""B5 · Juez v1.1 (contracts/judge_algorithm_v1.md §B5).
 
 Trabaja con tramas indexadas por k (centro k·hop). Precisiones (ver proto/ALGORITHM.md):
   * Ventana de un move: tramas con k ∈ [ceil(t/hop − 1e-6), floor((t+dur)/hop + 1e-6)].
-  * Desfases L = m·hop con |m| ≤ floor(gw·lag_search_scale/hop + 1e-6) (v1: lag_search_scale = 1).
+  * Desfases L = m·hop con |m| ≤ floor(gw·lag_search_scale/hop + 1e-6) (v1.1: lag_search_scale = 2; v1: 1).
     Orden de evaluación m = 0, −1, +1, −2, +2…; solo un score ESTRICTAMENTE mayor sustituye
     (empate → menor |L|, y a igual |L| gana el negativo).
   * Emparejado trama a trama: (ref k, jugador k+m), solo pares donde existen ambas tramas.
@@ -33,7 +33,7 @@ def emit_time(step, limb, config=None):
     """song_time a partir del cual se emite el resultado (regla de emisión del contrato)."""
     cfg = resolve_config(config)
     _, gw = windows(limb, cfg)
-    return step["t"] + step["dur"] + gw + cfg["emit_margin_s"]
+    return step["t"] + step["dur"] + cfg["lag_search_scale"] * gw + cfg["emit_margin_s"]
 
 
 def judge_accent(step, peaks_t, pw, gw):

@@ -15,7 +15,7 @@ def judge_song(choreo, player_samples, ref_samples=None, config=None, details=No
     -> list[dict(step, limb, grade, similarity, timing_error_ms)].
 
     Las muestras usan tiempo de canción. `config` sobrescribe constantes (ver config.DEFAULT_CONFIG;
-    admite "variant": "v1b"). Sin `ref_samples` todos los moves se juzgan sin referencia."""
+    admite "variant": "v1" para el contrato anterior). Sin `ref_samples` todos los moves se juzgan sin referencia."""
     cfg = merge_config(config)
     player = extract(player_samples, cfg)
     ref = extract(ref_samples, cfg) if ref_samples is not None else None

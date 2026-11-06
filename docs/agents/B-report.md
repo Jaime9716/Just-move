@@ -1,8 +1,13 @@
 # Informe del agente B · Prototipo Python del juez (H0)
 
+> **Actualización v1.1:** el arquitecto adoptó la propuesta (contrato v1.1, `LAG_SEARCH_SCALE = 2.0`,
+> emisión en `t + dur + LAG_SEARCH_SCALE·gw + EMIT_MARGIN_S`, ALGORITHM.md §1 normativa). jdproto usa
+> v1.1 por defecto (v1 con `config={"variant":"v1"}` / `--variant v1`); los golden (incluido
+> `perfect_noref`) se regeneraron con v1.1 y los 64 tests pasan.
+
 ## Qué hice
 
-- **`proto/jdproto/`**: implementación fiel del juez v1 con la API exacta del contrato
+- **`proto/jdproto/`**: implementación fiel del juez v1.1 con la API exacta del contrato
   (`session.load_session`, `choreo.load_choreo`, `pipeline.judge_song`) y los módulos `signal.py` (B3),
   `features.py` (B4), `judge.py` (B5), `config.py` (constantes configurables + variantes), CLI
   `python -m jdproto.judge_cli <song_dir> <sesión.jsonl> [--json]` (con `PYTHONPATH=proto`).
@@ -16,10 +21,10 @@
 - **`data/sessions/synthetic/`**: `song_demo/choreo.json` (30 s, 120 BPM, 20 pasos accent/move de manos y
   pie derecho → 27 resultados) + `song_demo/ref_imu.jsonl`; sesiones `perfect`, `late_40ms`,
   `late_150ms`, `early_80ms`, `wrong_moves`, `still`, `noisy`, `foot_only` (3 móviles: dos manos y el pie
-  derecho; `foot_only` solo el pie); `golden/<sesión>.json` = salida de `judge_song` con **v1**
+  derecho; `foot_only` solo el pie); `golden/<sesión>.json` = salida de `judge_song` con **v1.1**
   (+ `golden/perfect_noref.json`: perfect juzgada sin referencia, para cubrir el camino "move sin ref").
 - **`proto/ALGORITHM.md`**: todas las decisiones que el contrato deja abiertas (C debe copiarlas para
-  reproducir los golden), el problema encontrado y la variante v1b con resultados.
+  reproducir los golden), el problema de v1 y el cambio a v1.1 con resultados.
 - **`proto/dev_tests/`**: 64 tests pytest (B3 reposo/giro 90°/paso bajo, B4 picos ±1 muestra y
   separación, B5 ventanas, desfases, desempates, puerta de energía, sin referencia, orden, emisión;
   golden bit a bit, comportamientos de docs/06, CLI, validación, determinismo del sintetizador).
@@ -27,12 +32,12 @@
 
 ## Resultados por sesión (27 resultados cada una; P/G/M = Perfect/Good/Miss)
 
-| Sesión | Qué es | Esperado (docs/06) | v1 (golden) | v1b | ¿v1 cumple? |
+| Sesión | Qué es | Esperado (docs/06) | v1.1 (golden) | v1 (anterior) | ¿v1.1 cumple? |
 |---|---|---|---|---|---|
 | perfect | otra ejecución humana de la coreografía | mayoría Perfect | 27/0/0 | 27/0/0 | sí |
 | late_40ms | perfect +40 ms | Good/Perfect | 20/7/0 | 20/7/0 | sí |
-| late_150ms | perfect +150 ms | Miss | 0/10/17 | 0/0/27 | **no** (moves → Good) |
-| early_80ms | perfect −80 ms | — | 3/24/0 | 3/23/1 | — |
+| late_150ms | perfect +150 ms | Miss | 0/0/27 | 0/10/17 | sí (v1 no: moves → Good) |
+| early_80ms | perfect −80 ms | — | 3/23/1 | 3/24/0 | — |
 | wrong_moves | gestos equivocados | Miss mayoritario | 0/0/27 | 0/0/27 | sí |
 | still | móviles quietos en la mano | Miss | 0/0/27 | 0/0/27 | sí |
 | noisy | ruido ×8, 2 % pérdidas | — | 27/0/0 | 27/0/0 | — |
@@ -42,14 +47,14 @@
 Similitudes típicas: move bien hecho ≈ 0.97–1.00, move equivocado ≈ 0.17–0.28, quieto ≈ 0.
 
 **Problema de v1 (P1):** en los moves el desfase L se busca solo en ±gw, así que con 150 ms de retraso
-el mejor L queda en el borde (+100 ms) con similitud 0.7–0.9 → Good. **Variante v1b** (propuesta, no
-contrato): buscar en ±2·gw y mantener la regla de nota por |L*|; corrige late_150ms sin cambiar el
-resto. Disponible con `config={"variant":"v1b"}` / `--variant v1b`. Los golden son v1.
+el mejor L queda en el borde (+100 ms) con similitud 0.7–0.9 → Good. **v1.1** (adoptada): buscar en
+±2·gw y mantener la regla de nota por |L*|; corrige late_150ms. El único otro cambio es early_80ms paso 6
+(desfase real −120 ms → Miss). v1 sigue disponible con `config={"variant":"v1"}` / `--variant v1`.
 
 ## Cómo probarlo
 
 ```bash
-python3 proto/synth.py --variant v1b      # regenera datos y golden, imprime la tabla
+python3 proto/synth.py --variant v1       # regenera datos y golden v1.1, imprime la tabla (y la de v1)
 python3 -m pytest -q proto/dev_tests
 PYTHONPATH=proto python3 -m jdproto.judge_cli data/sessions/synthetic/song_demo data/sessions/synthetic/late_150ms.jsonl
 ```
@@ -62,7 +67,8 @@ PYTHONPATH=proto python3 -m jdproto.judge_cli data/sessions/synthetic/song_demo 
   pares de L*, tolerancias 1e-9 / 1e-6.
 - Los golden se calculan en f64 leyendo los `.jsonl` del disco. Compara `grade` exacto y `similarity` /
   `timing_error_ms` con tolerancia (sugerido 1e-3 y 0.01 ms). Margen mínimo a un umbral que cambie
-  nota: 0.003 (perfect_noref); diferencia mínima entre mejores desfases no empatados: 6e-4.
+  nota: 0.003 (perfect_noref); diferencia mínima entre mejores desfases no empatados: 3e-4 (wrong_moves paso 6).
+- v1.1: desfases m ∈ [−10, 10] (manos) / [−15, 15] (pies); emisión con 2·gw.
 - Las muestras sintéticas nunca caen en el borde de una trama (fase por dispositivo + jitter ±0.4 ms).
 
 ## Qué queda / qué no pude verificar
@@ -77,10 +83,6 @@ PYTHONPATH=proto python3 -m jdproto.judge_cli data/sessions/synthetic/song_demo 
 
 ## Propuestas de contrato
 
-1. **v1b / v2:** añadir `LAG_SEARCH_SCALE = 2` (búsqueda de L en ±2·gw, nota igual que v1). Ver
-   ALGORITHM.md §3.
-2. Fijar en el contrato las precisiones de ALGORITHM.md §1 (sobre todo: tramas por índice k con
-   tolerancia, desempate de desfases, inicialización del filtro y criterio de máximo local), para que
-   cualquier implementación reproduzca los golden sin leer el prototipo.
-3. `session_format.md`: el ejemplo de `devices` aún usa `"kind":"joycon"`; con móviles sería
+1. ~~`LAG_SEARCH_SCALE = 2`~~ y ~~precisiones de ALGORITHM.md §1 normativas~~: **adoptadas en v1.1**.
+2. `session_format.md`: el ejemplo de `devices` aún usa `"kind":"joycon"`; con móviles sería
    `"kind":"phone"` (los sintéticos usan `"phone"`).

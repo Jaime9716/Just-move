@@ -2,7 +2,7 @@
 
 Opciones extra (no rompen el contrato):
   --no-ref            ignora ref_imu.jsonl (todos los moves sin referencia)
-  --variant NAME      v1 (por defecto) | v1b  (ver proto/ALGORITHM.md)
+  --variant NAME      v1.1 (por defecto) | v1 (contrato anterior)  (ver proto/ALGORITHM.md)
   --config FILE.json  sobrescribe constantes (claves de jdproto.config.DEFAULT_CONFIG)
   --offset S          mono_to_song_s para sesiones con time_base="mono" (t_song = t + S)
 """
@@ -19,7 +19,7 @@ from .session import SessionError, load_session, to_song_time
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="python -m jdproto.judge_cli",
-                                 description="Juez v1: puntúa una sesión grabada contra una canción.")
+                                 description="Juez v1.1: puntúa una sesión grabada contra una canción.")
     ap.add_argument("song_dir")
     ap.add_argument("session")
     ap.add_argument("--json", action="store_true", help="salida JSON (lista de resultados)")

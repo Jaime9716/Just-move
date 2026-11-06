@@ -1,4 +1,4 @@
-"""Constantes del juez v1 (contracts/judge_algorithm_v1.md) y fusión de configuración.
+"""Constantes del juez v1.1 (contracts/judge_algorithm_v1.md) y fusión de configuración.
 
 Las claves van en minúsculas. `merge_config` acepta también las mayúsculas del contrato
 (p. ej. "PEAK_MIN") y lanza ValueError ante claves desconocidas.
@@ -36,15 +36,15 @@ DEFAULT_CONFIG = {
     "perfect_sim": 0.75,
     "good_sim": 0.5,
     "emit_margin_s": 0.05,
-    # ---- Extensiones (NO son v1; ver proto/ALGORITHM.md). Con estos valores = v1 exacto.
-    # Multiplicador del rango de búsqueda de desfase L en "move": v1 = 1.0 (±gw).
-    "lag_search_scale": 1.0,
+    # v1.1: rango de búsqueda del desfase L de los move = ±lag_search_scale·gw (v1 = 1.0).
+    "lag_search_scale": 2.0,
 }
 
-# Variantes con nombre (ver proto/ALGORITHM.md). "v1" es el contrato.
+# Variantes con nombre (ver proto/ALGORITHM.md). Por defecto = "v1.1" (contrato vigente).
 VARIANTS = {
-    "v1": {},
-    "v1b": {"lag_search_scale": 2.0},
+    "v1.1": {},
+    "v1b": {},                          # nombre de la propuesta, = v1.1
+    "v1": {"lag_search_scale": 1.0},    # contrato anterior
 }
 
 
