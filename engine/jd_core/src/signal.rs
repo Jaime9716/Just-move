@@ -5,11 +5,12 @@
 //! Cálculo interno en f64; la salida (FilteredSample) en f32.
 //!
 //! Interpretaciones locales (ver docs/agents/C-report.md):
-//! - La primera muestra de cada extremidad solo inicializa (filtro = entrada, q = rotación mínima
-//!   del accel a +Y); no integra gyro.
+//! Sigue proto/ALGORITHM.md §1 (normativo desde v1.1):
+//! - La primera muestra inicializa (filtro = entrada, q = rotación mínima del accel a +Y) y después
+//!   pasa por los mismos pasos que las demás (integra con dt = 0.005, corrige, lin_accel).
 //! - La puerta de gravedad usa la norma del accel FILTRADO.
-//! - Si `flags` indica que falta accel o gyro, se mantiene el valor filtrado anterior de ese sensor.
-//!   `flags == 0` se interpreta como "trae los dos" (muestras construidas a mano).
+//! - Si `flags` indica que falta accel o gyro, se usa el último valor BRUTO de ese sensor
+//!   ((0,G,0) / 0 si nunca llegó). `flags == 0` se interpreta como "trae los dos" (local).
 //! - Muestras con `limb` fuera de 0..3 se ignoran.
 use crate::types::{FilteredSample, Limb, MotionSample, SignalProcessor, SAMPLE_HAS_ACCEL, SAMPLE_HAS_GYRO};
 
@@ -91,19 +92,21 @@ const UP: Vec3 = [0.0, 1.0, 0.0];
 
 /// Rotación mínima que lleva el vector unitario `from` a `to` (antiparalelos: 180° sobre X).
 fn q_from_to(from: Vec3, to: Vec3) -> Quat {
-    let d = dot(from, to).clamp(-1.0, 1.0);
     let axis = cross(from, to);
-    if norm(axis) < 1e-12 {
-        if d > 0.0 { return [1.0, 0.0, 0.0, 0.0]; }
+    let an = norm(axis);
+    if an < 1e-12 {
+        if dot(from, to) > 0.0 { return [1.0, 0.0, 0.0, 0.0]; }
         return q_axis_angle([1.0, 0.0, 0.0], std::f64::consts::PI);
     }
-    q_axis_angle(axis, d.acos())
+    q_axis_angle(axis, an.atan2(dot(from, to)))
 }
 
 #[derive(Clone, Copy, Debug)]
 struct LimbState {
     started: bool,
     last_t: f64,
+    raw_a: Vec3,
+    raw_g: Vec3,
     acc: Vec3,
     gyr: Vec3,
     q: Quat,
@@ -111,7 +114,10 @@ struct LimbState {
 
 impl Default for LimbState {
     fn default() -> Self {
-        LimbState { started: false, last_t: 0.0, acc: [0.0; 3], gyr: [0.0; 3], q: [1.0, 0.0, 0.0, 0.0] }
+        LimbState {
+            started: false, last_t: 0.0, raw_a: [0.0, 9.80665, 0.0], raw_g: [0.0; 3],
+            acc: [0.0; 3], gyr: [0.0; 3], q: [1.0, 0.0, 0.0, 0.0],
+        }
     }
 }
 
@@ -121,7 +127,11 @@ pub struct DefaultSignalProcessor {
 }
 
 impl DefaultSignalProcessor {
-    pub fn new(p: SignalParams) -> Self { DefaultSignalProcessor { p, limbs: [LimbState::default(); 4] } }
+    pub fn new(p: SignalParams) -> Self {
+        let mut st = LimbState::default();
+        st.raw_a = [0.0, p.g, 0.0];
+        DefaultSignalProcessor { p, limbs: [st; 4] }
+    }
 
     fn step(&mut self, s: &MotionSample, mono_to_song_s: f64) -> Option<FilteredSample> {
         let limb = s.limb();
@@ -131,45 +141,48 @@ impl DefaultSignalProcessor {
         let t = s.t_ns as f64 * 1e-9 + mono_to_song_s;
         let has_a = s.flags == 0 || s.flags & SAMPLE_HAS_ACCEL != 0;
         let has_g = s.flags == 0 || s.flags & SAMPLE_HAS_GYRO != 0;
-        let ax: Vec3 = [s.accel[0] as f64, s.accel[1] as f64, s.accel[2] as f64];
-        let gx: Vec3 = [s.gyro[0] as f64, s.gyro[1] as f64, s.gyro[2] as f64];
+        // Sensor ausente: último valor BRUTO recibido (o (0,G,0) / 0 si nunca llegó).
+        if has_a { st.raw_a = [s.accel[0] as f64, s.accel[1] as f64, s.accel[2] as f64]; }
+        if has_g { st.raw_g = [s.gyro[0] as f64, s.gyro[1] as f64, s.gyro[2] as f64]; }
+        let (ax, gx) = (st.raw_a, st.raw_g);
         let g = p.g;
 
+        let dt;
         if !st.started {
             st.started = true;
-            st.last_t = t;
-            st.acc = if has_a { ax } else { [0.0, g, 0.0] };
-            st.gyr = if has_g { gx } else { [0.0; 3] };
+            dt = p.first_dt;
+            st.acc = ax;
+            st.gyr = gx;
             let n = norm(st.acc);
-            st.q = if n > 1e-9 {
+            st.q = if n > 0.0 {
                 q_from_to([st.acc[0] / n, st.acc[1] / n, st.acc[2] / n], UP)
             } else {
                 [1.0, 0.0, 0.0, 0.0]
             };
         } else {
-            let dt = (t - st.last_t).clamp(p.dt_min, p.dt_max);
-            st.last_t = t;
+            dt = (t - st.last_t).clamp(p.dt_min, p.dt_max);
             let k = dt / (dt + 1.0 / (2.0 * std::f64::consts::PI * p.lpf_cutoff_hz));
-            if has_a { for i in 0..3 { st.acc[i] += k * (ax[i] - st.acc[i]); } }
-            if has_g { for i in 0..3 { st.gyr[i] += k * (gx[i] - st.gyr[i]); } }
-            // Integración del gyro (marco del sensor): q ← q ⊗ exp(½·ω·dt)
-            let w = st.gyr;
-            let wn = norm(w);
-            if wn > 0.0 {
-                st.q = q_mul(st.q, q_axis_angle(w, wn * dt));
-            }
-            st.q = q_normalize(st.q);
-            // Corrección complementaria hacia la gravedad.
-            let an = norm(st.acc);
-            if an >= p.gravity_gate_lo * g && an <= p.gravity_gate_hi * g {
-                let ahat = [st.acc[0] / an, st.acc[1] / an, st.acc[2] / an];
-                let up_est = q_rotate(st.q, ahat);
-                let axis = cross(up_est, UP);
-                let ang = dot(up_est, UP).clamp(-1.0, 1.0).acos();
-                if ang > 0.0 {
-                    let axis = if norm(axis) < 1e-12 { [1.0, 0.0, 0.0] } else { axis };
-                    st.q = q_normalize(q_mul(q_axis_angle(axis, p.comp_alpha * ang), st.q));
-                }
+            for i in 0..3 { st.acc[i] += k * (ax[i] - st.acc[i]); }
+            for i in 0..3 { st.gyr[i] += k * (gx[i] - st.gyr[i]); }
+        }
+        st.last_t = t;
+        // Integración del gyro (marco del sensor): q ← normalize(q ⊗ exp(½·ω·dt))
+        let w = st.gyr;
+        let theta = norm(w) * dt;
+        if theta > 1e-12 {
+            st.q = q_mul(st.q, q_axis_angle(w, theta));
+        }
+        st.q = q_normalize(st.q);
+        // Corrección complementaria hacia la gravedad (marco del mundo).
+        let an = norm(st.acc);
+        if an >= p.gravity_gate_lo * g && an <= p.gravity_gate_hi * g {
+            let ahat = [st.acc[0] / an, st.acc[1] / an, st.acc[2] / an];
+            let up = q_rotate(st.q, ahat);
+            let axis = cross(up, UP);
+            let axn = norm(axis);
+            if axn > 1e-12 {
+                let ang = axn.atan2(up[1]);
+                st.q = q_normalize(q_mul(q_axis_angle(axis, p.comp_alpha * ang), st.q));
             }
         }
         let wa = q_rotate(st.q, st.acc);
@@ -194,7 +207,7 @@ impl SignalProcessor for DefaultSignalProcessor {
             if let Some(f) = self.step(s, mono_to_song_s) { out.push(f); }
         }
     }
-    fn reset(&mut self) { self.limbs = [LimbState::default(); 4]; }
+    fn reset(&mut self) { *self = DefaultSignalProcessor::new(self.p); }
 }
 
 pub fn make_signal_processor() -> Box<dyn SignalProcessor> {

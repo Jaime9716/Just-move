@@ -3,19 +3,19 @@
 //! Un resultado por paso y extremidad. Determinista: el resultado solo depende de las tramas
 //! recibidas y de la secuencia de `update`.
 //!
-//! Interpretaciones locales (ver docs/agents/C-report.md):
-//! - Move con referencia = hay tramas de referencia de esa extremidad con centro en [t, t+dur].
-//!   Emparejado por índice de trama: referencia k ↔ jugador k + L/hop. Si falta la trama del
-//!   jugador cuenta como energía 0 y dirección nula.
-//! - Desfases L = j·hop con |j·hop| ≤ gw; empate de score → menor |L| y, a igual |L|, el negativo.
-//! - Varianza (para ncc) = media de cuadrados de desviaciones; n < 2 → varianza 0 → ncc 0.
-//! - Move sin referencia: media de las tramas del jugador existentes en [t, t+dur] (0 si no hay).
-//! - Accent: empate de distancia → el pico anterior.
-//! - Emisión: en cada `update` se emiten, ordenados por (paso, extremidad), todos los resultados
-//!   cuyo instante de emisión del contrato ya pasó. EXTENSIÓN para tiempo real: si esa extremidad
-//!   ya ha enviado tramas pero aún no han llegado las que cubren la ventana del paso (las tramas
-//!   salen con hasta ~0.25 s de retraso por la detección de picos), se espera a ellas hasta
-//!   `max_wait_s` más. Con todas las tramas ya empujadas (uso offline) coincide con el contrato.
+//! Contrato v1.1 + proto/ALGORITHM.md §1 (normativo):
+//! - Ventana de un move: tramas k ∈ [ceil(t/hop − 1e-6), floor((t+dur)/hop + 1e-6)]; hay referencia si
+//!   existe alguna trama de referencia de esa extremidad en ella.
+//! - Desfases L = m·hop, |m| ≤ floor(LAG_SEARCH_SCALE·gw/hop + 1e-6); orden 0, −1, +1, …, solo sustituye
+//!   un score estrictamente mayor. Pares (ref k, jugador k+m) solo donde existen ambas tramas; sin
+//!   pares → score 0. Puerta de energía con las medias de los pares de L*. La nota usa pw/gw.
+//! - Accent: pico con |err| ≤ gw + 1e-9, el más cercano (empate → el anterior).
+//! - Emisión: t + dur + LAG_SEARCH_SCALE·gw + EMIT_MARGIN_S; en cada `update` se emiten, ordenados por
+//!   (paso, extremidad), todos los vencidos. EXTENSIÓN de tiempo real (permitida por el contrato): si
+//!   esa extremidad ya ha enviado tramas pero aún no han llegado las que cubren la ventana del paso
+//!   (salen con hasta ~0.25 s de retraso por la detección de picos), se espera hasta `max_wait_s` más.
+//!   Con todas las tramas ya empujadas (uso offline) coincide con el contrato.
+use crate::features::EPS_T;
 use crate::types::{Choreo, FeatureFrame, Grade, Judge, JudgeConfig, Limb, StepKind, StepResult};
 
 /// Parámetros de B5 (valores por defecto del contrato v1). Las ventanas van en JudgeConfig.
@@ -30,6 +30,8 @@ pub struct JudgeParams {
     pub emit_margin_s: f64,
     pub frame_hop_s: f64,
     pub var_eps: f64,
+    /// v1.1: la búsqueda de desfase de los move cubre ±lag_search_scale·gw (1.0 = v1).
+    pub lag_search_scale: f64,
     /// Espera extra máxima a las tramas del jugador (extensión de tiempo real; 0 = contrato puro).
     pub max_wait_s: f64,
 }
@@ -46,6 +48,7 @@ impl Default for JudgeParams {
             emit_margin_s: 0.05,
             frame_hop_s: 0.02,
             var_eps: 1e-6,
+            lag_search_scale: 2.0,
             max_wait_s: 0.5,
         }
     }
@@ -53,7 +56,6 @@ impl Default for JudgeParams {
 
 #[derive(Clone, Copy, Debug)]
 struct Lite {
-    t: f64,
     energy: f64,
     dir: [f64; 3],
     nonzero: bool,
@@ -76,10 +78,10 @@ impl LimbFrames {
         }
     }
     fn get(&self, k: i64) -> Option<&Lite> { self.ks.binary_search(&k).ok().map(|i| &self.fr[i]) }
-    /// Rango de índices con t en [a, b].
-    fn range(&self, a: f64, b: f64) -> std::ops::Range<usize> {
-        let lo = self.fr.partition_point(|f| f.t < a);
-        let hi = self.fr.partition_point(|f| f.t <= b);
+    /// Rango de índices con k en [k0, k1].
+    fn range_k(&self, k0: i64, k1: i64) -> std::ops::Range<usize> {
+        let lo = self.ks.partition_point(|&k| k < k0);
+        let hi = self.ks.partition_point(|&k| k <= k1);
         lo..hi.max(lo)
     }
     fn clear(&mut self) { self.ks.clear(); self.fr.clear(); }
@@ -113,7 +115,7 @@ pub struct DefaultJudge {
 
 fn lite(f: &FeatureFrame) -> Lite {
     let d = [f.dir[0] as f64, f.dir[1] as f64, f.dir[2] as f64];
-    Lite { t: f.t_song, energy: f.energy as f64, dir: d, nonzero: d.iter().any(|v| *v != 0.0) }
+    Lite { energy: f.energy as f64, dir: d, nonzero: d.iter().any(|v| *v != 0.0) }
 }
 
 fn frame_k(t: f64, hop: f64) -> i64 { (t / hop).round() as i64 }
@@ -141,30 +143,41 @@ impl DefaultJudge {
 
     fn judge_accent(&self, it: &Item) -> (Grade, f64, f64) {
         let peaks = &self.peaks[it.limb as usize];
-        let lo = peaks.partition_point(|&p| p < it.t - it.gw);
+        let lo = peaks.partition_point(|&p| p < it.t - it.gw - EPS_T);
         let mut best: Option<f64> = None;
         for &pt in &peaks[lo..] {
-            if pt > it.t + it.gw { break; }
             let e = pt - it.t;
-            match best { Some(b) if (b).abs() <= e.abs() => {}, _ => best = Some(e) }
+            if e > it.gw + EPS_T { break; }
+            if e.abs() > it.gw + EPS_T { continue; }
+            match best { Some(b) if b.abs() <= e.abs() => {}, _ => best = Some(e) }
         }
         match best {
             None => (Grade::Miss, 0.0, 0.0),
             Some(err) => {
-                let g = if err.abs() <= it.pw { Grade::Perfect } else if err.abs() <= it.gw { Grade::Good } else { Grade::Miss };
-                (g, (1.0 - err.abs() / it.gw).max(0.0), err * 1000.0)
+                if err.abs() <= it.pw + EPS_T {
+                    (Grade::Perfect, (1.0 - err.abs() / it.gw).max(0.0), err * 1000.0)
+                } else {
+                    (Grade::Good, (1.0 - err.abs() / it.gw).max(0.0), err * 1000.0)
+                }
             }
         }
+    }
+
+    /// Índices de trama de la ventana [t, t+dur]: [ceil(t/hop − 1e-6), floor((t+dur)/hop + 1e-6)].
+    fn window_k(&self, it: &Item) -> (i64, i64) {
+        let hop = self.p.frame_hop_s;
+        ((it.t / hop - 1e-6).ceil() as i64, ((it.t + it.dur) / hop + 1e-6).floor() as i64)
     }
 
     fn judge_move(&self, it: &Item, er: &mut Vec<f64>, ep: &mut Vec<f64>) -> (Grade, f64, f64) {
         let p = &self.p;
         let li = it.limb as usize;
         let rf = &self.reference[li];
-        let rr = rf.range(it.t, it.t + it.dur);
         let pf = &self.player[li];
+        let (k0, k1) = self.window_k(it);
+        let rr = rf.range_k(k0, k1);
         if rr.is_empty() {
-            let r = pf.range(it.t, it.t + it.dur);
+            let r = pf.range_k(k0, k1);
             let n = r.len();
             let mean = if n == 0 { 0.0 } else { pf.fr[r].iter().map(|f| f.energy).sum::<f64>() / n as f64 };
             let sim = (mean / p.noref_energy_full).clamp(0.0, 1.0);
@@ -172,51 +185,49 @@ impl DefaultJudge {
             return (g, sim, 0.0);
         }
         let hop = p.frame_hop_s;
-        let jmax = ((it.gw / hop) + 1e-9).floor() as i64;
+        let mmax = (p.lag_search_scale * it.gw / hop + 1e-6).floor() as i64;
         let rks = &rf.ks[rr.clone()];
         let rfr = &rf.fr[rr];
-        er.clear();
-        er.extend(rfr.iter().map(|f| f.energy));
-        let n = er.len() as f64;
-        let mean_r = er.iter().sum::<f64>() / n;
 
         // Orden de búsqueda: 0, −1, +1, −2, +2… y solo se sustituye con score estrictamente mayor.
-        let mut order = vec![0i64];
-        for j in 1..=jmax { order.push(-j); order.push(j); }
-        let mut best: Option<(f64, i64, f64)> = None; // (score, j, mean_p)
-        for j in order {
+        let mut best: Option<(f64, i64, f64, f64)> = None; // (score, m, mean_r, mean_p) de los pares
+        for step in 0..=(2 * mmax) {
+            let m = if step == 0 { 0 } else if step % 2 == 1 { -((step + 1) / 2) } else { step / 2 };
+            er.clear();
             ep.clear();
             let mut dsum = 0.0;
             let mut dn = 0usize;
             for (idx, &k) in rks.iter().enumerate() {
-                match pf.get(k + j) {
-                    Some(pfr) => {
-                        ep.push(pfr.energy);
-                        let rfrm = &rfr[idx];
-                        if rfrm.nonzero && pfr.nonzero {
-                            dsum += rfrm.dir[0] * pfr.dir[0] + rfrm.dir[1] * pfr.dir[1] + rfrm.dir[2] * pfr.dir[2];
-                            dn += 1;
-                        }
+                if let Some(pfr) = pf.get(k + m) {
+                    let rfrm = &rfr[idx];
+                    er.push(rfrm.energy);
+                    ep.push(pfr.energy);
+                    if rfrm.nonzero && pfr.nonzero {
+                        dsum += rfrm.dir[0] * pfr.dir[0] + rfrm.dir[1] * pfr.dir[1] + rfrm.dir[2] * pfr.dir[2];
+                        dn += 1;
                     }
-                    None => ep.push(0.0),
                 }
             }
-            let mean_p = ep.iter().sum::<f64>() / n;
-            let ncc = ncc(er, mean_r, ep, mean_p, p.var_eps);
-            let score = if dn == 0 { ncc } else {
-                let dcos = (dsum / dn as f64).clamp(0.0, 1.0);
-                p.w_ncc * ncc + p.w_dir * dcos
+            let (score, mean_r, mean_p) = if er.is_empty() { (0.0, 0.0, 0.0) } else {
+                let n = er.len() as f64;
+                let mean_r = er.iter().sum::<f64>() / n;
+                let mean_p = ep.iter().sum::<f64>() / n;
+                let ncc = ncc(er, mean_r, ep, mean_p, p.var_eps);
+                let score = if dn == 0 { ncc } else {
+                    let dcos = (dsum / dn as f64).clamp(0.0, 1.0);
+                    p.w_ncc * ncc + p.w_dir * dcos
+                };
+                (score, mean_r, mean_p)
             };
-            match best { Some((s, _, _)) if score <= s => {}, _ => best = Some((score, j, mean_p)) }
+            match best { Some((s, ..)) if score <= s => {}, _ => best = Some((score, m, mean_r, mean_p)) }
         }
-        let (mut score, j, mean_p) = best.unwrap();
-        if mean_r > 0.0 && mean_p < p.energy_gate * mean_r {
-            score *= mean_p / (p.energy_gate * mean_r);
-        }
-        let l = j as f64 * hop;
-        let g = if score >= p.perfect_sim && l.abs() <= it.pw + 1e-9 {
+        let (mut score, m, mean_r, mean_p) = best.unwrap();
+        let gate = p.energy_gate * mean_r;
+        if gate > 0.0 && mean_p < gate { score *= mean_p / gate; }
+        let l = m as f64 * hop;
+        let g = if score >= p.perfect_sim && l.abs() <= it.pw + EPS_T {
             Grade::Perfect
-        } else if score >= p.good_sim && l.abs() <= it.gw + 1e-9 {
+        } else if score >= p.good_sim && l.abs() <= it.gw + EPS_T {
             Grade::Good
         } else {
             Grade::Miss
@@ -254,10 +265,11 @@ impl Judge for DefaultJudge {
             limbs.dedup();
             for limb in limbs {
                 let (pw, gw) = self.windows(limb);
-                let needed = match st.kind { StepKind::Accent => st.t + gw, StepKind::Move => st.t + st.dur + gw };
+                let lag = self.p.lag_search_scale * gw;
+                let needed = match st.kind { StepKind::Accent => st.t + gw, StepKind::Move => st.t + st.dur + lag };
                 self.items.push(Item {
                     step: si, limb, t: st.t, dur: st.dur, kind: st.kind, pw, gw,
-                    due: st.t + st.dur + gw + self.p.emit_margin_s,
+                    due: st.t + st.dur + lag + self.p.emit_margin_s,
                     needed,
                 });
             }
@@ -439,21 +451,21 @@ mod tests {
     #[test]
     fn emission_time_and_order() {
         let c = choreo(vec![
-            step(1.0, 0.5, &[Limb::LeftFoot, Limb::RightHand], StepKind::Accent), // mano 1.65, pie 1.70
-            step(1.2, 0.35, &[Limb::LeftHand], StepKind::Accent),                 // mano 1.70
+            step(1.0, 0.5, &[Limb::LeftFoot, Limb::RightHand], StepKind::Accent), // mano 1.75, pie 1.85
+            step(1.2, 0.4, &[Limb::LeftHand], StepKind::Accent),                  // mano 1.85
         ]);
         let mut j = make_judge();
         j.load(&c, &[], &JudgeConfig::default());
         let mut out = Vec::new();
         // Sin tramas del jugador: se emite en el instante del contrato.
-        j.update(1.6499, &mut out);
+        j.update(1.7499, &mut out);
         assert!(out.is_empty());
-        j.update(1.6501, &mut out);
+        j.update(1.7501, &mut out);
         assert_eq!(out.len(), 1);
         assert_eq!((out[0].step_index, out[0].limb), (0, Limb::RightHand as u8));
-        j.update(1.6999, &mut out);
+        j.update(1.8499, &mut out);
         assert_eq!(out.len(), 1);
-        j.update(1.7001, &mut out);
+        j.update(1.8501, &mut out);
         assert_eq!(out.len(), 3);
         assert_eq!((out[1].step_index, out[1].limb), (0, Limb::LeftFoot as u8));
         assert_eq!((out[2].step_index, out[2].limb), (1, Limb::LeftHand as u8));
@@ -475,16 +487,16 @@ mod tests {
         j.update(1.25, &mut out);
         assert!(out.is_empty(), "debe esperar a las tramas que cubren la ventana");
         j.push(&[peak_frame(1.01, Limb::RightHand), frame(1.12, Limb::RightHand, 0.1, [0.0; 3])]);
-        j.update(1.26, &mut out);
+        j.update(1.36, &mut out);
         assert_eq!(out[0].grade, Grade::Perfect as u8);
         // Sin tramas nuevas: como mucho max_wait_s de espera extra.
         let c = choreo(vec![step(2.0, 0.1, &[Limb::RightHand], StepKind::Accent)]);
         j.load(&c, &[], &JudgeConfig::default());
         j.push(&[frame(1.0, Limb::RightHand, 0.1, [0.0; 3])]);
         out.clear();
-        j.update(2.73, &mut out);
+        j.update(2.83, &mut out);
         assert!(out.is_empty());
-        j.update(2.76, &mut out);
+        j.update(2.86, &mut out);
         assert_eq!(out.len(), 1);
     }
 }

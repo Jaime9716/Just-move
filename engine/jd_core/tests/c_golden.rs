@@ -60,6 +60,9 @@ fn matches_python_golden() {
             }
         }
         println!("c_golden {}: {}/{} grades iguales", name, ok, n);
+        if name == "late_150ms" {
+            assert!(res.iter().all(|r| r.grade == Grade::Miss as u8), "v1.1: 150 ms tarde → Miss");
+        }
         total += n;
         same += ok;
     }

@@ -145,20 +145,19 @@ fn move_with_reference() {
         assert!((x.timing_error_ms - 40.0).abs() <= 20.0 + 1e-3, "{:?}", x);
     }
 
-    // 150 ms tarde (fuera de la ventana de manos): nunca Perfect y el desfase satura en +100 ms.
-    // Nota: según el contrato v1 sale Good (L* = +gw con score alto); ver C-report (propuesta).
+    // v1.1: 150 ms tarde (fuera de la ventana de manos) → Miss, con el desfase hallado ≈ +150 ms.
     let late = dance(Limb::LeftHand, 0.15, 1.0, 5);
     let r = judge_offline(&c, &ref_frames, &late, &cfg);
     for x in r.iter().filter(|x| x.limb == Limb::LeftHand as u8) {
-        assert!(x.grade != Grade::Perfect as u8 && x.timing_error_ms == 100.0, "{:?}", x);
+        assert_eq!(x.grade, Grade::Miss as u8, "{:?}", x);
+        assert!((x.timing_error_ms - 150.0).abs() <= 20.0 + 1e-3, "{:?}", x);
     }
-    // 400 ms tarde: Miss casi siempre.
-    let late = dance(Limb::LeftHand, 0.4, 1.0, 6);
+    // En pies (gw = 150 ms) 120 ms tarde sigue siendo Good.
+    let late = dance(Limb::RightFoot, 0.12, 1.0, 6);
     let r = judge_offline(&c, &ref_frames, &late, &cfg);
-    let hands: Vec<_> = r.iter().filter(|x| x.limb == Limb::LeftHand as u8).collect();
-    let misses = hands.iter().filter(|x| x.grade == Grade::Miss as u8).count();
-    println!("400 ms: {:?}", hands);
-    assert!(misses * 10 >= hands.len() * 6, "{:?}", hands);
+    for x in r.iter().filter(|x| x.limb == Limb::RightFoot as u8) {
+        assert_eq!(x.grade, Grade::Good as u8, "{:?}", x);
+    }
 
     // Quieto: Miss en todo.
     let mut still = gen(Limb::LeftHand, 0.0, 8.0, 0.2, 9, &|_| [0.0; 3]);

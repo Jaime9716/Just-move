@@ -1,5 +1,15 @@
 # Informe del agente C · Motor y juez (B3, B4, B5, motor de alto nivel)
 
+> **Actualización v1.1:** implementado `contracts/judge_algorithm_v1.md` v1.1 como comportamiento por
+> defecto (`JudgeParams::lag_search_scale = 2.0`; 1.0 = v1) y alineado con `proto/ALGORITHM.md` §1 (normativo):
+> B3 — la 1ª muestra también integra/corrige, sensor ausente = último valor bruto, ángulos con atan2;
+> B4 — ventana ±WIN/2 + 1e-9, mediana en (t−1, t], pico en la trama floor(t/hop + 0.5), `peak_t_song = 0` sin pico;
+> B5 — ventana de move por índices k con 1e-6, búsqueda ±2·gw, solo pares existentes (sin pares → 0), puerta con
+> medias de los pares de L*, tolerancia 1e-9 en ventanas, emisión en t + dur + 2·gw + 0.05.
+> **Golden v1.1 de B: 243/243 (100 %), Δsimilitud < 1e-5, Δtiming 0 ms; late_150ms = 27 Miss** (el test de
+> 150 ms en c_pipeline ahora exige Miss). Rendimiento release: 0.0025 ms/fotograma. Las secciones de abajo
+> describen la versión v1; donde contradigan esta nota, manda la nota. La propuesta 2 ya está adoptada (v1.1).
+
 ## Qué hice
 
 | Archivo | Contenido |

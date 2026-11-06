@@ -13,10 +13,10 @@
 //! 4. Una trama se EMITE cuando ningún pico aún no decidido puede caer en ella. Por eso las tramas
 //!    salen con un retraso de ~0.06 s (sin picos) a ~0.25 s (tras un pico) respecto a su centro.
 //!
-//! Interpretaciones locales: máximo local = m[i] > m[i−1] y m[i] ≥ m[i+1] (meseta → primera muestra;
-//! la primera y la última muestra nunca son pico); mediana de las tramas con centro en
-//! [t_i − 1, t_i] (si no hay ninguna, solo cuenta PEAK_MIN); trama más cercana con empate → la
-//! anterior; en tramas sin pico `peak_t_song` = instante de la muestra de máximo |lin_accel|.
+//! Sigue proto/ALGORITHM.md §1 (normativo desde v1.1): ventana |t − t_c| ≤ WIN/2 + 1e-9;
+//! máximo local = m[i] > m[i−1] y m[i] ≥ m[i+1] (la primera y la última muestra nunca son pico);
+//! mediana de las tramas con centro en (t_i − 1, t_i] (si no hay ninguna, solo cuenta PEAK_MIN);
+//! el pico va a la trama floor(t/hop + 0.5); en tramas sin pico `peak_t_song` = 0.0.
 use crate::types::{FeatureExtractor, FeatureFrame, FilteredSample, Limb};
 use std::collections::VecDeque;
 
@@ -54,16 +54,12 @@ struct S {
     quat: [f32; 4],
 }
 
-/// Índice de la trama cuyo centro (k·hop) está más cerca de t (empate → la anterior).
+/// Tolerancia de las comparaciones de ventanas de tiempo (proto/ALGORITHM.md §1).
+pub const EPS_T: f64 = 1e-9;
+
+/// Trama que recibe un pico en t: k = floor(t/hop + 0.5) (proto/ALGORITHM.md §1).
 pub fn nearest_frame_index(t: f64, hop: f64) -> i64 {
-    let k0 = (t / hop).floor() as i64;
-    let mut best = k0 - 1;
-    let mut bd = (t - best as f64 * hop).abs();
-    for k in [k0, k0 + 1] {
-        let d = (t - k as f64 * hop).abs();
-        if d < bd { best = k; bd = d; }
-    }
-    best
+    (t / hop + 0.5).floor() as i64
 }
 
 #[derive(Default)]
@@ -89,7 +85,7 @@ impl LimbFx {
 
     /// Primera trama que contiene t.
     fn first_k_containing(p: &FeatureParams, t: f64) -> i64 {
-        let half = p.frame_win_s / 2.0;
+        let half = p.frame_win_s / 2.0 + EPS_T;
         let mut k = ((t - half) / p.frame_hop_s).ceil() as i64;
         while (t - Self::center(p, k - 1)).abs() <= half { k -= 1; }
         while !((t - Self::center(p, k)).abs() <= half) && Self::center(p, k) < t { k += 1; }
@@ -97,19 +93,18 @@ impl LimbFx {
     }
 
     fn compute_frame(&self, p: &FeatureParams, limb: Limb, k: i64) -> Option<FeatureFrame> {
-        let half = p.frame_win_s / 2.0;
+        let half = p.frame_win_s / 2.0 + EPS_T;
         let c = Self::center(p, k);
         let mut n = 0usize;
         let mut sum2 = 0.0;
         let mut peak = -1.0;
-        let mut peak_t = c;
         let mut sl = [0.0f64; 3];
         let mut quat = [1.0f32, 0.0, 0.0, 0.0];
         for s in &self.samples {
             if (s.t - c).abs() <= half {
                 n += 1;
                 sum2 += s.m * s.m;
-                if s.m > peak { peak = s.m; peak_t = s.t; }
+                if s.m > peak { peak = s.m; }
                 for i in 0..3 { sl[i] += s.lin[i]; }
                 quat = s.quat;
             }
@@ -127,7 +122,7 @@ impl LimbFx {
             energy: (sum2 / nf).sqrt() as f32,
             peak: peak as f32,
             is_peak: false,
-            peak_t_song: peak_t,
+            peak_t_song: 0.0,
             dir,
             quat,
         })
@@ -136,7 +131,7 @@ impl LimbFx {
     /// Calcula tramas cuyo final ya pasó (o todas, si `all`).
     fn compute_frames(&mut self, p: &FeatureParams, limb: Limb, all: bool) {
         if self.samples.is_empty() { return; }
-        let half = p.frame_win_s / 2.0;
+        let half = p.frame_win_s / 2.0 + EPS_T;
         if self.next_k.is_none() {
             let t0 = self.samples[0].t;
             self.next_k = Some(Self::first_k_containing(p, t0));
@@ -167,7 +162,7 @@ impl LimbFx {
         scratch.clear();
         let lo = t - p.peak_rel_window_s;
         for &(c, e) in &self.energy_hist {
-            if c >= lo && c <= t { scratch.push(e); }
+            if c > lo && c <= t { scratch.push(e); }
         }
         if scratch.is_empty() { return None; }
         scratch.sort_by(|a, b| a.partial_cmp(b).unwrap());
@@ -217,7 +212,7 @@ impl LimbFx {
             // La mediana solo mira 1 s hacia atrás.
             let lo = si.t - p.peak_rel_window_s;
             while let Some(&(c, _)) = self.energy_hist.front() {
-                if c < lo { self.energy_hist.pop_front(); } else { break; }
+                if c <= lo { self.energy_hist.pop_front(); } else { break; }
             }
         }
     }
@@ -247,7 +242,7 @@ impl LimbFx {
     }
 
     fn prune(&mut self, p: &FeatureParams) {
-        let half = p.frame_win_s / 2.0;
+        let half = p.frame_win_s / 2.0 + EPS_T;
         let cmin = match self.next_k { Some(k) => Self::center(p, k) - half, None => return };
         let keep_from = self.eval_i.saturating_sub(1);
         while let Some(s) = self.samples.front() {
@@ -444,10 +439,10 @@ mod tests {
     }
 
     #[test]
-    fn nearest_frame_tie_goes_earlier() {
+    fn peak_frame_is_floor_plus_half() {
         assert_eq!(nearest_frame_index(1.0, 0.02), 50);
         assert_eq!(nearest_frame_index(1.009, 0.02), 50);
         assert_eq!(nearest_frame_index(1.011, 0.02), 51);
-        assert_eq!(nearest_frame_index(0.03, 0.02), 1);
+        assert_eq!(nearest_frame_index(1.01, 0.02), (1.01f64 / 0.02 + 0.5).floor() as i64);
     }
 }
