@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-/* Implementado en engine/common/clock.cpp con std::chrono::steady_clock. */
+/* Implementado en Rust (jd_core::clock::now_ns, std::time::Instant desde una base fija del proceso). */
 int64_t jd_now_ns(void);
 
 #ifdef __cplusplus

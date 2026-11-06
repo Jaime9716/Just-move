@@ -23,11 +23,11 @@ T2 usa un runner propio sin dependencias: `godot --headless --path game -s res:/
   Empareja cada evento con el clic más cercano, descarta |diferencia| > max_abs; devuelve
   `{ok: bool, offset: float (mediana, + = el jugador va tarde), stddev: float, n_used: int}`; ok = n_used ≥ 4.
 - `static func detect_shakes(samples: Array, threshold: float = 25.0, min_sep: float = 0.15) -> PackedFloat64Array`
-  `samples` = diccionarios de `JDSource.poll_samples` con `t_ns` y `a`; devuelve tiempos (s) donde |a| cruza el umbral hacia arriba.
+  `samples` = diccionarios de `JDSource.poll_samples` con `t_ns` y `a`; devuelve tiempos (s) donde |a| cruza el umbral hacia arriba (sacudida del móvil).
 
 **`profile.gd` — `class_name Profile`**
 - Campos: `audio_offset`, `visual_offset`, `input_offset` (s, 0), `perfect_ms` (50), `good_ms` (100),
-  `foot_scale` (1.5), `limb_by_device: Dictionary` (nombre de dispositivo → limb int).
+  `foot_scale` (1.5), `limb_by_device: Dictionary` (nombre de dispositivo → limb int), `phone_port` (47800).
 - `func save(path: String = "user://profile.cfg") -> Error` · `func load(path := "user://profile.cfg") -> bool`
   (false y valores por defecto si falta o está corrupto).
 

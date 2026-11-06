@@ -1,51 +1,53 @@
 # AGENTS.md — reglas para los agentes que programan este repositorio
 
-Juego de baile con Joy-Con. Prioridad: **Windows x86-64 + Joy-Con**; Linux después.
+Juego de baile. **El juego corre en PC (Windows x86-64 primero, Linux después) y el mando es un
+móvil Android** que envía acelerómetro y giroscopio por Wi-Fi (como Just Dance Now). Sin Joy-Con.
+Motor en **Rust** con API en C; juego en **Godot 4.4** (GDScript); app de mando en **Kotlin** (Android).
+
 Lee antes de empezar: `docs/` (arquitectura por bloques, sincronización, requisitos, planes de prueba)
-y **todo** `contracts/`.
+y **todo** `contracts/`. Donde los docs antiguos hablen de Joy-Con/SDL3/C++, mandan los contratos.
 
 ## Reglas comunes
 
-1. **Solo escribes en tus carpetas** (tabla abajo). Puedes LEER todo el repo.
-2. `contracts/` y `engine/common/` son de solo lectura. Si un contrato no te basta, NO lo cambies:
-   escribe la propuesta en `docs/agents/<tu-letra>-report.md` (sección "Propuestas de contrato")
-   y trabaja con una solución local mientras tanto.
-3. **No hagas `git commit`** ni toques `.git` (otros agentes trabajan a la vez). El arquitecto integra.
-4. Compila en tu propio directorio de build para no pisar a otros:
-   `cmake -S . -B build/<tu-letra> -G Ninja && cmake --build build/<tu-letra> && ctest --test-dir build/<tu-letra> --output-on-failure`
-5. C++17, sin dependencias externas en el núcleo (solo STL + `engine/common`). Namespace `jd`.
-   Biblioteca estática por área: `jd_<area>` definida en `engine/<area>/CMakeLists.txt`
-   (el CMake raíz la incluye sola si existe). Tests de desarrollador en `engine/<area>/tests/`,
-   con `engine/common/mini_test.h`, registrados con `add_test`.
-6. Python 3.11+, solo stdlib + numpy (pytest disponible para tests).
-7. Código y comentarios: identificadores en inglés, comentarios y mensajes al usuario en español.
-8. Al terminar escribe `docs/agents/<tu-letra>-report.md`: qué hiciste, cómo probarlo, qué queda,
+1. **Solo escribes en tus carpetas/archivos** (tabla abajo). Puedes LEER todo el repo.
+2. `contracts/`, `engine/jd_core/src/{types,json,clock}.rs`, `engine/jd_core/src/lib.rs`,
+   `engine/jd_capi/src/lib.rs` y los `Cargo.toml` del workspace son del arquitecto (solo lectura).
+   Si un contrato no te basta, NO lo cambies: escribe la propuesta en `docs/agents/<letra>-report.md`
+   ("Propuestas de contrato") y usa una solución local.
+3. **No hagas `git commit`** ni toques `.git`. El arquitecto integra.
+4. Rust: edición 2021, **sin dependencias externas** en `jd_core`, `jd_capi`, `jd_tools` (no hay red).
+   Compila y prueba con un target dir propio para no pisar a otros:
+   `cd engine && CARGO_TARGET_DIR=../build/<letra> cargo test -p jd_core` (o el paquete que toque).
+   Tests unitarios en tu módulo (`#[cfg(test)]`) y de integración en `engine/jd_core/tests/<letra>_*.rs`.
+   Sin `unsafe` salvo en `jd_capi`. Sin warnings de `cargo build`.
+5. Python 3.11+, solo stdlib + numpy (pytest disponible).
+6. Identificadores en inglés; comentarios y mensajes al usuario en español.
+7. Al terminar escribe `docs/agents/<letra>-report.md`: qué hiciste, cómo probarlo, qué queda,
    qué no pudiste verificar y por qué, propuestas de contrato.
 
 ## Limitaciones del entorno de desarrollo (nube, Linux)
 
-- **Sin red**: no hay GitHub ni PyPI. No hay SDL3, godot-cpp, GoogleTest, GUT, Godot ni yt-dlp instalados.
-  Sí hay: g++ 13, clang, cmake 3.28, ninja, python3 + numpy + pytest, ffmpeg.
-- El código que dependa de SDL3 / godot-cpp / Godot / yt-dlp se escribe con cuidado pero **no se puede
-  compilar ni ejecutar aquí**: aíslalo detrás de opciones (`JD_WITH_SDL3`, `JD_WITH_GODOT`) o de
-  interfaces con implementaciones falsas, y prueba todo lo demás. El usuario compila en su PC Windows
-  (Visual Studio + CMake) siguiendo `BUILD_WINDOWS.md` (agente G).
-- Godot objetivo: **Godot 4.4** (GDScript tipado). SDL3: 3.2.x.
-- No hay Joy-Con aquí: usa sesiones sintéticas (`data/sessions/synthetic/`, las genera el agente B con
-  `proto/synth.py`) o genera tus propios datos de prueba dentro de tu carpeta.
+- **Sin red**: no hay crates.io, GitHub, PyPI ni Maven. Sí hay: Rust 1.97 (cargo), python3 + numpy +
+  pytest, ffmpeg, Java + Gradle (sin Android SDK), g++/clang.
+- **No se puede compilar ni ejecutar aquí**: la GDExtension (`jd_godot`, necesita la crate `godot`),
+  Godot, la app Android (necesita Android SDK) ni yt-dlp. Ese código se escribe con mucho cuidado y se
+  compila en GitHub Actions (cuando el usuario dé acceso) o en el PC del usuario.
+- No hay móvil real: usa el simulador de móvil (`jd_tools`, bin `phone_sim`, agente A) o datos
+  sintéticos (`data/sessions/synthetic/`, agente B).
 
-## Propiedad de carpetas
+## Propiedad
 
-| Agente | Bloques | Carpetas propias |
+| Agente | Bloques | Escribe en |
 |---|---|---|
-| A · Joy-Con SDL3 | B1, B7 | `engine/input/`, `engine/session/`, `engine/api/sources.cpp` |
-| B · Prototipo Python | prototipo B3–B5 | `proto/`, `data/sessions/synthetic/` |
-| C · Motor y juez C++ | B3, B4, B5 | `engine/signal/`, `engine/features/`, `engine/judge/`, `engine/api/engine.cpp` |
+| A · Fuente móvil y sesiones | B1, B7 | `engine/jd_core/src/{session,replay,recorder}.rs`, `engine/jd_core/src/phone.rs` o `phone/`, `engine/jd_capi/src/sources.rs`, `engine/jd_tools/src/bin/{jd_record,phone_sim}.rs`, `engine/jd_core/tests/a_*.rs` |
+| B · Prototipo Python | prototipo B3–B5 | `proto/` (menos `proto/tests/`), `data/sessions/synthetic/` |
+| C · Motor y juez | B3, B4, B5 | `engine/jd_core/src/{signal,features,judge,engine}.rs`, `engine/jd_capi/src/engine.rs`, `engine/jd_tools/src/bin/jd_judge.rs`, `engine/jd_core/tests/c_*.rs` |
 | D · Sincronía Godot | B2, B9 | `game/core/` |
 | E · UI de juego | B8 | `game/ui/`, `game/scenes/`, `game/assets/` |
-| F · Coreografías + YouTube | B6 | `engine/choreo/`, `tools/`, `data/songs/` |
-| G · Build y CI | B10 | `CMakeLists.txt` (raíz), `cmake/`, `game/gdextension/`, `game/project.godot`, `scripts/`, `BUILD_WINDOWS.md` |
-| T1 · Tests motor | — | `engine/tests/`, `proto/tests/` |
+| F · Coreografías + YouTube | B6 | `engine/jd_core/src/choreo.rs`, `engine/jd_core/tests/f_*.rs`, `tools/`, `data/songs/` |
+| G · Build, GDExtension, CI | B10 | `engine/jd_godot/`, `game/project.godot`, `game/jd_engine.gdextension`, `game/bin/`, `.github/`, `scripts/`, `BUILD.md` |
+| P · App Android de mando | B1 (móvil) | `android/` |
+| T1 · Tests motor | — | `engine/jd_core/tests/t1_*.rs`, `engine/jd_capi/tests/`, `proto/tests/` |
 | T2 · Tests juego | — | `game/tests/` |
 | T3 · Pruebas reales | — | `tests/system/`, `docs/feedback/` |
 
@@ -53,9 +55,10 @@ Todos: `docs/agents/<letra>-report.md`.
 
 ## Decisiones ya tomadas
 
-- Reloj único: `jd_now_ns()` (contracts/clock.h). La música es el reloj maestro (docs/02).
+- Reloj único: `jd_core::clock::now_ns()` = `jd_now_ns()`. La música es el reloj maestro (docs/02).
 - `song_time = t_ns * 1e-9 + mono_to_song_s`; SongClock calcula `mono_to_song_s` (incluye offsets).
-- Canciones y vídeos: se importan de YouTube con yt-dlp (herramienta de F, **solo uso personal**),
-  a un paquete de canción (contracts/song_package.md): `audio.ogg` + `video.ogv` (Theora sin audio).
-- El vídeo del bailarín es **esclavo del SongClock**: se reproduce mudo y se corrige la deriva (agente E).
-- Puntuación IMU: comparación con referencia grabada + pico en el beat (docs/01, docs/03).
+- Mando: móvil Android por UDP con sincronización de reloj tipo NTP (contracts/phone_protocol.md).
+- Canciones y vídeos: importados de YouTube con yt-dlp (herramienta de F, **solo uso personal**) a un
+  paquete de canción (contracts/song_package.md): `audio.ogg` + `video.ogv` (Theora sin audio).
+- El vídeo del bailarín es **esclavo del SongClock**: mudo y con corrección de deriva (agente E).
+- Puntuación: algoritmo del juez v1 (contracts/judge_algorithm_v1.md), igual en Python (B) y Rust (C).

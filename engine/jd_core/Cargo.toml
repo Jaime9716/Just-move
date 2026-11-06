@@ -1,0 +1,8 @@
+[package]
+name = "jd_core"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+# Sin dependencias externas a propósito (el entorno de desarrollo no tiene red).
+[dependencies]

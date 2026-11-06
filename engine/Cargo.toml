@@ -1,0 +1,14 @@
+# Workspace del motor (Rust). jd_godot (GDExtension con gdext) queda fuera del workspace porque
+# necesita crates.io; se compila en CI / en el PC del usuario (ver engine/jd_godot).
+[workspace]
+resolver = "2"
+members = ["jd_core", "jd_capi", "jd_tools"]
+exclude = ["jd_godot"]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+license = "MIT"
+
+[profile.release]
+debug = 1

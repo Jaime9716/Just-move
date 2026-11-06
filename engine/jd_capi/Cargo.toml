@@ -1,0 +1,12 @@
+[package]
+name = "jd_capi"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[lib]
+name = "jd_engine"          # -> jd_engine.dll / libjd_engine.so
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+jd_core = { path = "../jd_core" }

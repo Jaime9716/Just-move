@@ -1,0 +1,8 @@
+[package]
+name = "jd_tools"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+jd_core = { path = "../jd_core" }

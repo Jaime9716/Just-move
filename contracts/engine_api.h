@@ -1,7 +1,8 @@
 /* contracts/engine_api.h — CONTRATO: API C del motor hacia el juego (Godot)
  *
  * La GDExtension (agente G) envuelve SOLO estas funciones. Godot no ve C++ interno.
- * Implementación: engine/api/engine.cpp (agente C) y engine/api/sources.cpp (agente A).
+ * Implementación en Rust: engine/jd_capi/src/engine.rs (agente C) y engine/jd_capi/src/sources.rs (agente A).
+ * Este archivo es la fuente de verdad; el Rust debe coincidir exactamente (#[repr(C)], extern "C").
  * Todas las cadenas son UTF-8. Las funciones que devuelven int: 0 = OK, <0 = error.
  */
 #ifndef JD_ENGINE_API_H
@@ -34,14 +35,18 @@ typedef struct JD_Source JD_Source;
 typedef struct JD_DeviceInfoC {
     uint32_t source_id;
     char     name[64];
-    char     kind[16];
+    char     kind[16];   /* "phone", "replay", ... */
     uint8_t  limb;       /* JD_Limb */
     uint8_t  connected;  /* 0/1 */
     float    battery;    /* 0..1, -1 desconocido */
+    float    sync_rtt_ms;/* rtt mínimo de la sincronización de reloj; -1 si no aplica */
 } JD_DeviceInfoC;
 
-/* Joy-Con reales vía SDL3. Si el motor se compiló sin SDL3 devuelve NULL. */
-JD_API JD_Source* jd_source_create_joycon(void);
+/* Servidor de móviles-mando (contracts/phone_protocol.md). port 0 = 47800.
+ * pairing_code: código de 4 dígitos que se muestra en pantalla (0 = generar uno aleatorio). */
+JD_API JD_Source* jd_source_create_phone_server(uint16_t port, uint32_t pairing_code);
+/* Escribe "IP:puerto" de la interfaz LAN principal y devuelve el código de emparejado. */
+JD_API uint32_t   jd_source_phone_endpoint(JD_Source* s, char* out, int out_len);
 
 /* Reproduce una sesión grabada (formato contracts/session.schema.json).
  * Las muestras se emiten en tiempo real a partir de start(), con t_ns = jd_now_ns()

@@ -1,7 +1,7 @@
 # Contrato · Algoritmo del juez v1 (B3 → B4 → B5)
 
 El agente **B** lo implementa en Python (`proto/jdproto/`) y lo ajusta con datos; el agente **C** lo
-implementa en C++ con **los mismos parámetros**. Si B propone cambios, los documenta en
+implementa en Rust (`engine/jd_core`) con **los mismos parámetros**. Si B propone cambios, los documenta en
 `proto/ALGORITHM.md` y el arquitecto decide si pasan a v2. Todas las constantes son configurables.
 
 ## Constantes por defecto
