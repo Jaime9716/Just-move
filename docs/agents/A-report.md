@@ -10,7 +10,7 @@
 | `engine/jd_core/src/phone/` (antes `phone.rs`) | `protocol.rs` (codificar y decodificar mensajes), `clock_sync.rs` (offset y deriva), `server.rs` (`PhoneServerSource`), `sim.rs` (simulador de móvil, lo usan el bin y los tests) |
 | `engine/jd_capi/src/sources.rs` | Todas las `jd_source_*` de `engine_api.h`, `JD_DeviceInfoC` `#[repr(C)]` (96 bytes, offsets comprobados en un test) |
 | `engine/jd_tools/src/bin/phone_sim.rs` | Simula un móvil: HELLO, SYNC, SAMPLES a 200 Hz con sacudidas periódicas, STATUS; también `--discover` |
-| `engine/jd_tools/src/bin/jd_record.rs` | Servidor más grabación JSONL; muestra endpoint y código; por móvil muestra Hz, rtt, deriva, pérdidas y batería |
+| `engine/jd_tools/src/bin/jd_record.rs` | Servidor más grabación JSONL; muestra endpoint y código; por móvil muestra Hz, rtt, deriva, pérdidas y batería. `--limb X` (primer móvil) y `--limbs a,b,...` (por orden de conexión) |
 | `engine/jd_core/tests/a_phone_loopback.rs` | Integración en 127.0.0.1: tiempos ±2 ms (offset de +3 días y 50 ppm), código incorrecto, DISCOVER y basura, timeout y reconexión (HELLO nuevo y reanudación con el mismo socket), `assign_limb` |
 
 ### Detalles de comportamiento
@@ -37,12 +37,18 @@
   - `PhoneServerHandle` (clonable) da acceso a endpoint, código y estadísticas aunque la fuente esté envuelta.
 - **API C:** cada `JD_Source` guarda la fuente en `Arc<Mutex<dyn MotionSource>>`. Tras `jd_source_create_recorder(inner, ..)` siguen siendo válidos los dos punteros (se destruyen por separado), pero solo se debe hacer poll del recorder. `jd_source_phone_endpoint` también funciona sobre un recorder que envuelve un servidor. `jd_source_poll` guarda lo que no cabe en `max` para la siguiente llamada. Los nombres se truncan en un límite de carácter UTF-8. Ninguna función falla con punteros nulos. El puerto 0 se traduce a 47800 en la API C (en Rust, 0 significa puerto efímero, que usan los tests).
 
+### Correcciones tras el informe de T3
+
+- **Extremidad en `jd_record`:** `--limb left_hand|right_hand|left_foot|right_foot` asigna la extremidad del primer móvil y `--limbs a,b,...` la de cada móvil por orden de conexión; `--limb` tiene prioridad para el primero. Una extremidad desconocida da error de uso. Se aplica en el servidor (`PhoneServerSource::set_limb_order`) en el momento del HELLO, antes de la primera muestra, así que todas las muestras y la cabecera ya la llevan; con `assign_limb` después habría habido unos milisegundos de muestras con `right_hand`. Los móviles que pasen de la lista siguen el orden por defecto. Hay un test unitario (`configured_limb_order`).
+- **stdin cerrado:** un EOF en stdin ya no termina la grabación; solo la termina una línea real (Enter). Con `< /dev/null` graba hasta `--seconds`, o indefinidamente si no se da.
+- Comprobado a mano: `jd_record --limbs left_foot,right_foot < /dev/null` con dos `phone_sim` graba los 3 s completos, y tanto la cabecera como las muestras salen con left_foot y right_foot.
+
 ## Cómo probarlo
 
 ```
-cd engine && CARGO_TARGET_DIR=../build/A cargo test -p jd_core -p jd_capi -p jd_tools   # 87 tests, sin warnings
+cd engine && CARGO_TARGET_DIR=../build/A cargo test -p jd_core -p jd_capi -p jd_tools   # sin warnings
 # a mano, en dos terminales:
-../build/A/debug/jd_record /tmp/s.jsonl --seconds 10 --code 2468
+../build/A/debug/jd_record /tmp/s.jsonl --seconds 10 --code 2468 --limb right_foot
 ../build/A/debug/phone_sim 127.0.0.1:47800 --code 2468 --seconds 8 --drift-ppm 50 --offset-s 1000
 ```
 

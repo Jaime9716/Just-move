@@ -1,12 +1,16 @@
 //! jd_record — graba móviles-mando a una sesión JSONL (contracts/session_format.md). AGENTE A.
 //!
 //! Uso: jd_record <salida.jsonl> [--seconds N] [--port P] [--code C] [--song ID] [--note TEXTO]
+//!                [--limb EXTREMIDAD] [--limbs a,b,...]
+//! --limb: extremidad del primer móvil; --limbs: lista por orden de conexión (left_hand, right_hand,
+//! left_foot, right_foot). Se asigna al emparejar, así que muestras y cabecera ya la llevan.
+//! Si stdin está cerrado (EOF), no termina: graba hasta --seconds o indefinidamente.
 //! Arranca el servidor, muestra IP:puerto y código y graba (time_base "mono") hasta N segundos,
 //! Enter o Ctrl+C. Con Ctrl+C se pierde como mucho el último medio segundo (flush periódico) y la
 //! cabecera queda con los dispositivos vistos al empezar a grabar.
 use jd_core::phone::{PhoneServerSource, DEFAULT_PORT};
 use jd_core::recorder::RecorderSource;
-use jd_core::types::MotionSource;
+use jd_core::types::{Limb, MotionSource};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -14,8 +18,15 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 fn usage() -> ! {
-    eprintln!("Uso: jd_record <salida.jsonl> [--seconds N] [--port P] [--code C] [--song ID] [--note TEXTO]");
+    eprintln!("Uso: jd_record <salida.jsonl> [--seconds N] [--port P] [--code C] [--song ID] [--note TEXTO] [--limb EXTREMIDAD] [--limbs a,b,...]");
+    eprintln!("     EXTREMIDAD: left_hand | right_hand | left_foot | right_foot");
     std::process::exit(2);
+}
+
+fn parse_limb(s: &str) -> Limb {
+    let l = Limb::from_name(s.trim());
+    if l == Limb::None { eprintln!("extremidad desconocida: {}", s); usage(); }
+    l
 }
 
 fn main() {
@@ -24,6 +35,8 @@ fn main() {
     let out = PathBuf::from(&args[0]);
     let (mut seconds, mut port, mut code) = (None::<f64>, DEFAULT_PORT, 0u32);
     let (mut song, mut note) = (String::new(), String::new());
+    let mut limbs: Vec<Limb> = Vec::new();
+    let mut first_limb: Option<Limb> = None;
     let mut i = 1;
     while i < args.len() {
         let v = args.get(i + 1).cloned().unwrap_or_else(|| usage());
@@ -33,25 +46,38 @@ fn main() {
             "--code" => code = v.parse().unwrap_or_else(|_| usage()),
             "--song" => song = v,
             "--note" => note = v,
+            "--limb" => first_limb = Some(parse_limb(&v)),
+            "--limbs" => limbs = v.split(',').filter(|x| !x.trim().is_empty()).map(parse_limb).collect(),
             _ => usage(),
         }
         i += 2;
     }
 
-    let server = PhoneServerSource::new(port, code);
+    if let Some(l) = first_limb {
+        if limbs.is_empty() { limbs.push(l); } else { limbs[0] = l; }
+    }
+    let mut server = PhoneServerSource::new(port, code);
+    server.set_limb_order(&limbs);
     let handle = server.handle();
     let mut rec = RecorderSource::new(Box::new(server), &out).unwrap_or_else(|e| { eprintln!("{}", e); std::process::exit(1) });
     rec.set_song_id(&song);
     rec.set_note(&note);
     if let Err(e) = rec.start() { eprintln!("no se pudo arrancar el servidor: {}", e); std::process::exit(1); }
     println!("Servidor de mandos en {}   código de emparejado: {:04}", handle.endpoint(), handle.pairing_code());
+    if !limbs.is_empty() {
+        println!("Extremidades por orden de conexión: {}", limbs.iter().map(|l| l.name()).collect::<Vec<_>>().join(", "));
+    }
     println!("Grabando en {} — pulsa Enter (o Ctrl+C) para terminar{}", out.display(),
         seconds.map(|s| format!(", o espera {} s", s)).unwrap_or_default());
 
     let enter = Arc::new(AtomicBool::new(false));
     {
         let enter = enter.clone();
-        std::thread::spawn(move || { let mut l = String::new(); let _ = std::io::stdin().read_line(&mut l); enter.store(true, Ordering::SeqCst); });
+        // Solo una línea real termina; con EOF (stdin cerrado, p. ej. lanzado desde un script) se sigue grabando.
+        std::thread::spawn(move || {
+            let mut l = String::new();
+            if let Ok(n) = std::io::stdin().read_line(&mut l) { if n > 0 { enter.store(true, Ordering::SeqCst); } }
+        });
     }
     let start = Instant::now();
     let mut last_print = Instant::now();

@@ -154,11 +154,15 @@ struct Shared {
     last_error: String,
     rejected_hellos: u64,
     bad_packets: u64,
+    /// Extremidades para los móviles nuevos por orden de conexión (vacío = DEFAULT_LIMB_ORDER).
+    limb_order: Vec<Limb>,
 }
 
 impl Shared {
     fn next_seq(&mut self) -> u32 { self.seq = self.seq.wrapping_add(1); self.seq }
     fn pick_default_limb(&self) -> Limb {
+        // Orden configurado: el k-ésimo móvil nuevo recibe limb_order[k].
+        if let Some(l) = self.limb_order.get(self.devices.len()) { return *l; }
         for l in DEFAULT_LIMB_ORDER {
             if !self.devices.iter().any(|d| d.connected && d.limb == l) { return l; }
         }
@@ -227,7 +231,7 @@ impl PhoneServerSource {
         let shared = Arc::new(Mutex::new(Shared {
             code, port, endpoint: format!("{}:{}", local_ip, port), devices: Vec::new(),
             queue: VecDeque::new(), queue_overflow: 0, next_source_id: 1, seq: 0,
-            last_error: String::new(), rejected_hellos: 0, bad_packets: 0,
+            last_error: String::new(), rejected_hellos: 0, bad_packets: 0, limb_order: Vec::new(),
         }));
         let mut s = PhoneServerSource { requested_port: port, socket: None, shared, stop: Arc::new(AtomicBool::new(false)), thread: None, local_ip };
         if let Err(e) = s.bind() { lock(&s.shared).last_error = e; }
@@ -259,6 +263,10 @@ impl PhoneServerSource {
     pub fn local_port(&self) -> u16 { lock(&self.shared).port }
     pub fn stats(&self) -> Vec<PhoneDeviceStats> { self.handle().stats() }
     pub fn is_running(&self) -> bool { self.thread.is_some() }
+    /// Extremidades para los móviles nuevos, por orden de conexión (el 1.º recibe `order[0]`...).
+    /// Los que pasen de la lista siguen el orden por defecto. Se aplica en el HELLO, antes de la
+    /// primera muestra, así que las muestras y la cabecera de una grabación ya salen con ella.
+    pub fn set_limb_order(&mut self, order: &[Limb]) { lock(&self.shared).limb_order = order.to_vec(); }
 }
 
 impl MotionSource for PhoneServerSource {
@@ -534,7 +542,7 @@ mod tests {
 
     fn shared(code: u32) -> Shared {
         Shared { code, port: 1, endpoint: String::new(), devices: Vec::new(), queue: VecDeque::new(), queue_overflow: 0,
-            next_source_id: 1, seq: 0, last_error: String::new(), rejected_hellos: 0, bad_packets: 0 }
+            next_source_id: 1, seq: 0, last_error: String::new(), rejected_hellos: 0, bad_packets: 0, limb_order: Vec::new() }
     }
     fn addr(p: u16) -> SocketAddr { SocketAddr::from(([127, 0, 0, 1], p)) }
     fn pkt(id: u32, seq: u32, msg: Message) -> Vec<u8> { protocol::encode(&Packet { device_id: id, seq, msg }) }
@@ -568,6 +576,18 @@ mod tests {
         // SAMPLES de un desconocido: ignoradas.
         handle_datagram(&mut sh, &pkt(777, 1, Message::Samples(vec![PhoneSample::default()])), addr(98), 40, &mut out);
         assert!(sh.queue.is_empty());
+    }
+
+    #[test]
+    fn configured_limb_order() {
+        let mut sh = shared(1);
+        sh.limb_order = vec![Limb::LeftFoot, Limb::RightFoot];
+        let mut out = Vec::new();
+        for k in 0..3u32 {
+            handle_datagram(&mut sh, &pkt(10 + k, 1, Message::Hello { pairing_code: 1, name: "p".into() }), addr(1 + k as u16), 0, &mut out);
+        }
+        let limbs: Vec<Limb> = sh.devices.iter().map(|d| d.limb).collect();
+        assert_eq!(limbs, vec![Limb::LeftFoot, Limb::RightFoot, Limb::RightHand]);
     }
 
     #[test]
