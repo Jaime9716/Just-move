@@ -8,6 +8,12 @@
 > medias de los pares de L*, tolerancia 1e-9 en ventanas, emisión en t + dur + 2·gw + 0.05.
 > **Golden v1.1 de B: 243/243 (100 %), Δsimilitud < 1e-5, Δtiming 0 ms; late_150ms = 27 Miss** (el test de
 > 150 ms en c_pipeline ahora exige Miss). Rendimiento release: 0.0025 ms/fotograma. Las secciones de abajo
+> **Bugs de T1 corregidos:** (1) `judge.rs update` emite ahora siempre un prefijo en orden (paso, extremidad):
+> un resultado que no ha vencido o espera tramas retiene a los posteriores (antes, en tiempo real, podían adelantarse).
+> (2) `signal.rs`: componentes NaN/inf o |x| > 1e6 de accel/gyro se sustituyen por la última válida, muestras con
+> t no finito se descartan y hay una salvaguarda que reinicia la extremidad si el estado dejara de ser finito.
+> Quitados los `#[ignore]` de `t1_judge::realtime_emission_order_with_waiting_limb` y
+> `t1_robustness::nan_and_inf_samples_do_not_break_the_engine`; todo el workspace pasa y c_golden sigue al 100 %.
 > describen la versión v1; donde contradigan esta nota, manda la nota. La propuesta 2 ya está adoptada (v1.1).
 
 ## Qué hice

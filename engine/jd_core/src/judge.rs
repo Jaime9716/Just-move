@@ -10,8 +10,8 @@
 //!   un score estrictamente mayor. Pares (ref k, jugador k+m) solo donde existen ambas tramas; sin
 //!   pares → score 0. Puerta de energía con las medias de los pares de L*. La nota usa pw/gw.
 //! - Accent: pico con |err| ≤ gw + 1e-9, el más cercano (empate → el anterior).
-//! - Emisión: t + dur + LAG_SEARCH_SCALE·gw + EMIT_MARGIN_S; en cada `update` se emiten, ordenados por
-//!   (paso, extremidad), todos los vencidos. EXTENSIÓN de tiempo real (permitida por el contrato): si
+//! - Emisión: t + dur + LAG_SEARCH_SCALE·gw + EMIT_MARGIN_S, siempre como prefijo en orden
+//!   (paso, extremidad): un resultado no listo retiene a los posteriores. EXTENSIÓN de tiempo real (permitida por el contrato): si
 //!   esa extremidad ya ha enviado tramas pero aún no han llegado las que cubren la ventana del paso
 //!   (salen con hasta ~0.25 s de retraso por la detección de picos), se espera hasta `max_wait_s` más.
 //!   Con todas las tramas ya empujadas (uso offline) coincide con el contrato.
@@ -299,37 +299,34 @@ impl Judge for DefaultJudge {
     }
 
     fn update(&mut self, song_time_s: f64, out: &mut Vec<StepResult>) {
+        // Se emite siempre un prefijo en orden (paso, extremidad): si un resultado aún no está listo
+        // (no ha vencido o espera tramas), los posteriores esperan con él.
         let mut er = Vec::new();
         let mut ep = Vec::new();
         let half_hop = self.p.frame_hop_s / 2.0;
-        let mut i = self.first;
-        while i < self.items.len() {
-            let it = self.items[i];
-            if it.t > song_time_s { break; } // due > t: ningún paso posterior puede estar listo
-            if !self.emitted[i] && song_time_s >= it.due {
-                let li = it.limb as usize;
-                let ready = !self.seen[li]
-                    || self.watermark[li] >= it.needed - half_hop
-                    || song_time_s >= it.due + self.p.max_wait_s;
-                if ready {
-                    let (g, sim, terr) = match it.kind {
-                        StepKind::Accent => self.judge_accent(&it),
-                        StepKind::Move => self.judge_move(&it, &mut er, &mut ep),
-                    };
-                    out.push(StepResult {
-                        step_index: it.step as i32,
-                        limb: it.limb as u8,
-                        grade: g as u8,
-                        _reserved: 0,
-                        similarity: sim as f32,
-                        timing_error_ms: terr as f32,
-                    });
-                    self.emitted[i] = true;
-                }
-            }
-            i += 1;
+        while self.first < self.items.len() {
+            let it = self.items[self.first];
+            if song_time_s < it.due { break; }
+            let li = it.limb as usize;
+            let ready = !self.seen[li]
+                || self.watermark[li] >= it.needed - half_hop
+                || song_time_s >= it.due + self.p.max_wait_s;
+            if !ready { break; }
+            let (g, sim, terr) = match it.kind {
+                StepKind::Accent => self.judge_accent(&it),
+                StepKind::Move => self.judge_move(&it, &mut er, &mut ep),
+            };
+            out.push(StepResult {
+                step_index: it.step as i32,
+                limb: it.limb as u8,
+                grade: g as u8,
+                _reserved: 0,
+                similarity: sim as f32,
+                timing_error_ms: terr as f32,
+            });
+            self.emitted[self.first] = true;
+            self.first += 1;
         }
-        while self.first < self.items.len() && self.emitted[self.first] { self.first += 1; }
     }
 
     fn reset(&mut self) {

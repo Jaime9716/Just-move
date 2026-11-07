@@ -256,7 +256,6 @@ fn realtime_emission_within_contract_plus_0_5s_and_same_grades() {
 /// extremidad espera sus tramas (extensión de C, hasta 0.5 s) y otra no tiene datos, la segunda
 /// se emite antes aunque vaya después en el orden.
 #[test]
-#[ignore = "BUG (agente C, judge.rs update): en tiempo real los resultados salen fuera del orden (paso, extremidad) cuando una extremidad espera tramas y otra no tiene datos"]
 fn realtime_emission_order_with_waiting_limb() {
     let c = choreo(vec![
         step(2.0, 0.5, &[Limb::LeftHand, Limb::RightHand], StepKind::Accent),

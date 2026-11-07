@@ -160,7 +160,6 @@ fn poisoned(kind: &str) -> Vec<MotionSample> {
 /// Hoy un solo NaN entra en el LPF IIR y en el cuaternión y los deja en NaN para siempre: todos los
 /// pasos posteriores de esa extremidad dan Miss.
 #[test]
-#[ignore = "BUG (agente C, signal.rs): una sola muestra con NaN/inf en accel o gyro contamina para siempre el LPF y la orientación de esa extremidad (todos los pasos siguientes = Miss); no hay saneado de muestras no finitas"]
 fn nan_and_inf_samples_do_not_break_the_engine() {
     let c = choreo(vec![
         step(2.0, 0.5, &[Limb::RightHand], StepKind::Accent),

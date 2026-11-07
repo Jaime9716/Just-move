@@ -142,8 +142,12 @@ impl DefaultSignalProcessor {
         let has_a = s.flags == 0 || s.flags & SAMPLE_HAS_ACCEL != 0;
         let has_g = s.flags == 0 || s.flags & SAMPLE_HAS_GYRO != 0;
         // Sensor ausente: último valor BRUTO recibido (o (0,G,0) / 0 si nunca llegó).
-        if has_a { st.raw_a = [s.accel[0] as f64, s.accel[1] as f64, s.accel[2] as f64]; }
-        if has_g { st.raw_g = [s.gyro[0] as f64, s.gyro[1] as f64, s.gyro[2] as f64]; }
+        if !t.is_finite() { return None; }
+        // Componentes no finitas (NaN/inf) o absurdas (> 1e6): se sustituyen por la última válida,
+        // para que el estado del filtro y de la orientación nunca deje de ser finito.
+        let ok = |v: f32| v.is_finite() && v.abs() <= 1e6;
+        if has_a { for i in 0..3 { if ok(s.accel[i]) { st.raw_a[i] = s.accel[i] as f64; } } }
+        if has_g { for i in 0..3 { if ok(s.gyro[i]) { st.raw_g[i] = s.gyro[i] as f64; } } }
         let (ax, gx) = (st.raw_a, st.raw_g);
         let g = p.g;
 
@@ -184,6 +188,11 @@ impl DefaultSignalProcessor {
                 let ang = axn.atan2(up[1]);
                 st.q = q_normalize(q_mul(q_axis_angle(axis, p.comp_alpha * ang), st.q));
             }
+        }
+        if !(st.q.iter().all(|v| v.is_finite()) && st.acc.iter().all(|v| v.is_finite()) && st.gyr.iter().all(|v| v.is_finite())) {
+            // Salvaguarda: nunca debería ocurrir; reinicia la extremidad con la entrada actual.
+            *st = LimbState { raw_a: [0.0, g, 0.0], ..LimbState::default() };
+            return None;
         }
         let wa = q_rotate(st.q, st.acc);
         let lin = [wa[0], wa[1] - g, wa[2]];
@@ -332,5 +341,23 @@ mod tests {
         let k = 0.005 / (0.005 + 1.0 / (2.0 * std::f64::consts::PI * 20.0));
         assert!((out[1].gyro[0] as f64 - k).abs() < 1e-6);
         assert!((out[99].gyro[0] - 1.0).abs() < 1e-3);
+    }
+
+    #[test]
+    fn non_finite_components_are_replaced() {
+        let mut sp = make_signal_processor();
+        let mut input: Vec<_> = (0..400).map(|i| sample(i as f64 * 0.005, Limb::LeftHand, [0.0, 9.80665, 0.0], [0.0; 3])).collect();
+        input[100].accel = [f32::NAN, f32::INFINITY, 1e30];
+        input[200].gyro = [f32::NAN, f32::NEG_INFINITY, 0.0];
+        let mut out = Vec::new();
+        sp.process(&input, 0.0, &mut out);
+        assert_eq!(out.len(), 400);
+        for f in &out {
+            assert!(f.quat.iter().chain(f.lin_accel.iter()).chain(f.gyro.iter()).all(|v| v.is_finite()));
+            assert!(f.lin_accel.iter().all(|v| v.abs() < 0.01));
+        }
+        out.clear();
+        sp.process(&input[..1], f64::NAN, &mut out);
+        assert!(out.is_empty());
     }
 }
