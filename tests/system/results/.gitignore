@@ -1,0 +1,6 @@
+# Vídeos de P3 y otros archivos pesados: no se suben al repositorio
+*.mp4
+*.mov
+*.mkv
+*.3gp
+*.webm

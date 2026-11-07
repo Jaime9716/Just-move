@@ -1,0 +1,14 @@
+id,fecha,entorno,medida,criterio,cumple,notas
+F0,AAAA-MM-DD,"Windows 11, <móvil>, Wi-Fi 5 GHz 3 m","5 sesiones; session_stats: 200 Hz, 0 huecos","3-5 sesiones válidas en data/sessions/real/",sí/no,
+P1,AAAA-MM-DD,,"empareja __ s; código malo rechazado sí/no; reconecta __ s; extremidad conservada sí/no","empareja < 30 s; reconecta < 5 s sin reiniciar; misma extremidad",sí/no,
+P2,AAAA-MM-DD,,"__ Hz; __ huecos > 50 ms; pérdidas __ %; rtt __ ms","200 Hz ± 5 %; 0 huecos > 50 ms; pérdidas <= 1 %; rtt < 30 ms",sí/no,"sesión: reposo/movimiento, distancia"
+P3a,AAAA-MM-DD,,"principio __ ms; final __ ms; deriva __ ms/min","|desfase| <= 10 ms al principio y al final",sí/no,"cámara __ fps, --slowdown __"
+P3b,AAAA-MM-DD,,"vídeo bailarín: principio __ ms; final __ ms","<= 40 ms (nunca > 70 ms), sin deriva",sí/no,
+P4,AAAA-MM-DD,,"5 intentos: media __ ms; rango __ ms","rango < 10 ms; ± de cada intento < 15 ms",sí/no,"mano / pie / Espacio"
+P5,AAAA-MM-DD,,"bien __ %; destiempo __ %; equivocado __ %; quieto Miss __ %","bien >= 70 %; mal <= 40 %; quieto >= 95 % Miss; te parece justo",sí/no,canción
+P6,AAAA-MM-DD,,"1ª __ %; 2ª __ %; justa __/5","2ª >= 1ª + 5 puntos; justa >= 3/5",sí/no,
+P7,AAAA-MM-DD,,"pie: bien __ %; mal __ %; quieto Miss __ %; se soltó sí/no","bien >= 60 %; quieto >= 95 % Miss; no se suelta",sí/no,sujeción
+P8,AAAA-MM-DD,,"wifi cargada: pérdidas __ %, peor hueco __ ms; bloqueo: avisa sí/no, vuelve en __ s","pérdidas <= 5 %; huecos <= 200 ms; no se cuelga; reconecta < 5 s",sí/no,"caso a/b/c/d"
+P9,AAAA-MM-DD,,"medio __ fps; 1 % peor __; tirones __","medio >= 58,8; >= 99 % >= 54 fps; 0 fotogramas > 50 ms",sí/no,"canción, resolución, Hz del monitor"
+P10,AAAA-MM-DD,,"total __ min __ s; atascos: __","< 5 min sin ayuda",sí/no,
+P11,AAAA-MM-DD,"Linux <distro>, <móvil>, <Wi-Fi>","P1 __; P2 __; P3 __; P4 __; P5 __","mismos criterios; P3/P4 a <= 5 ms de Windows",sí/no,
