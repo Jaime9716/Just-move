@@ -242,7 +242,7 @@ class PhoneClient(
     /** Muestra combinada lista para enviar (ya en base elapsedRealtimeNanos). */
     fun onSample(s: PhoneSample, nowNs: Long) {
         lastNowNs = nowNs
-        rate.onEvent(s.tNs)
+        rate.onEvent(nowNs)
         if (state != ConnState.CONNECTED) return
         batch.add(s)
         if (batch.size >= MAX_BATCH) flush(nowNs)

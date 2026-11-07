@@ -267,16 +267,17 @@ class MandoController(context: Context, private val deviceId: Int) {
             Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY)
         } catch (_: Exception) {
         }
-        val sock: DatagramSocket
-        try {
-            sock = DatagramSocket()
-            bindToWifi(sock)
-            sock.broadcast = true
-            sock.soTimeout = SOCKET_TIMEOUT_MS
+        val sock: DatagramSocket = try {
+            val s = DatagramSocket()
+            bindToWifi(s)
+            s.broadcast = true
+            s.soTimeout = SOCKET_TIMEOUT_MS
+            s
         } catch (e: Exception) {
             lastError = "No se pudo abrir el socket UDP: ${e.message}"
             Log.e(TAG, lastError, e)
-            running = false
+            // `running` sigue a true para que stop() libere sensores y bloqueos; la UI muestra el error
+            // y se reintenta al volver a la app (onStop/onStart).
             return
         }
 
@@ -355,7 +356,15 @@ class MandoController(context: Context, private val deviceId: Int) {
                         is Command.Disconnect -> client.disconnect(now)
                     }
                 }
-                if (!running) break
+                if (!running) {
+                    // stop() encola Disconnect y luego baja `running`: si la orden llegó justo después
+                    // del sondeo de arriba, se procesa ahora para que el PC reciba el BYE.
+                    while (true) {
+                        val c = commands.poll() ?: break
+                        if (c is Command.Disconnect) client.disconnect(SystemClock.elapsedRealtimeNanos())
+                    }
+                    break
+                }
 
                 packet.setLength(buf.size) // receive() acorta la longitud al último datagrama
                 try {
