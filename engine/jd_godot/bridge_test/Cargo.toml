@@ -1,0 +1,15 @@
+# Prueba sin red de la parte de jd_godot que no depende de Godot (src/bridge.rs).
+# cargo test --manifest-path engine/jd_godot/bridge_test/Cargo.toml
+[package]
+name = "jd_godot_bridge_test"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+jd_core = { path = "../../jd_core" }
+
+[workspace]

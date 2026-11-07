@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono sencillo (vector): círculo morado con una nota musical estilizada. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FF6A1B9A"
+        android:pathData="M24,2A22,22 0,1 1,23.99 2Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M20,12L34,9L34,30A5,5 0,1 1,31 25.4L31,15.6L23,17.4L23,33A5,5 0,1 1,20 28.4Z" />
+</vector>

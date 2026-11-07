@@ -1,0 +1,33 @@
+# GDExtension del Juego de Baile (agente G, bloque B10).
+#
+# Fuera del workspace de engine/ a propósito: necesita la crate `godot` (godot-rust/gdext) de
+# crates.io, que no está disponible en el entorno de desarrollo sin red. Se compila en GitHub Actions
+# y en el PC del usuario:
+#     cargo build --release --manifest-path engine/jd_godot/Cargo.toml
+# Resultado: target/release/jd_godot.dll (Windows) o libjd_godot.so (Linux) -> copiar a game/bin/.
+#
+# Versión de gdext: 0.3.x con la feature `api-4-4` (bindings precompilados para Godot 4.4: no hace falta
+# tener Godot ni LLVM para compilar). El código usa la API de 0.3 (Array: FromIterator, Dictionary::set
+# con Variant, ProjectSettings::globalize_path con &GString). NO cambiar a 0.4+ sin revisar lib.rs.
+# Tras la primera compilación en CI, guardar el Cargo.lock generado (artefacto) en el repo para fijar
+# también las dependencias transitivas.
+[package]
+name = "jd_godot"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "jd_godot"            # -> jd_godot.dll / libjd_godot.so
+crate-type = ["cdylib"]
+
+[dependencies]
+godot = { version = "~0.3.0", features = ["api-4-4"] }
+jd_core = { path = "../jd_core" }
+
+[profile.release]
+debug = 1
+
+# Workspace propio vacío: así cargo no intenta adjuntar esta crate al workspace de engine/.
+[workspace]

@@ -1,0 +1,32 @@
+; Proyecto Godot 4.4 del Juego de Baile (agente G). Godot reescribe este archivo al guardar desde el
+; editor; mantener las claves de abajo.
+;
+; Renderizador: "gl_compatibility" (OpenGL 3.3 / ANGLE). El juego es 2D + vídeo Theora: no necesita
+; Vulkan/D3D12, arranca en más PCs (gráficas integradas antiguas, portátiles) y tiene menos latencia
+; de arranque. Es también el que funciona en modo headless/CI sin GPU.
+
+config_version=5
+
+[application]
+
+config/name="Juego de Baile"
+config/description="Juego de baile con el móvil como mando."
+run/main_scene="res://scenes/main_menu.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+
+[autoload]
+
+SongClock="*res://core/SongClock.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/vsync/vsync_mode=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
