@@ -3,8 +3,10 @@ target/
 __pycache__/
 *.pyc
 .godot/
-*.import
 data/songs/*/audio.ogg
 data/songs/*/video.ogv
 android/.gradle/
 android/**/build/
+game/bin/*.dll
+game/bin/*.so
+game/bin/*.pdb

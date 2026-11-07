@@ -1,4 +1,4 @@
-# build_windows.ps1 — compila el motor y la GDExtension en Windows x86-64 y los deja listos en game/bin.
+﻿# build_windows.ps1 - compila el motor y la GDExtension en Windows x86-64 y los deja listos en game/bin.
 # Agente G (B10). Uso, desde la raíz del repo en PowerShell:
 #     powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1            # compila + tests
 #     powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1 -SkipTests
@@ -37,8 +37,10 @@ Invoke-Step "GDExtension (engine/jd_godot): cargo build --release" {
 
 $Bin = Join-Path $Root "game\bin"
 New-Item -ItemType Directory -Force -Path $Bin | Out-Null
-$Dll = Join-Path $Root "engine\jd_godot\target\release\jd_godot.dll"
-$Pdb = Join-Path $Root "engine\jd_godot\target\release\jd_godot.pdb"
+# Respeta CARGO_TARGET_DIR si está definido.
+$TargetDir = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $Root "engine\jd_godot\target" }
+$Dll = Join-Path $TargetDir "release\jd_godot.dll"
+$Pdb = Join-Path $TargetDir "release\jd_godot.pdb"
 try {
     Copy-Item $Dll $Bin -Force
 } catch {

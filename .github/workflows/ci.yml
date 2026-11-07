@@ -54,6 +54,7 @@ jobs:
         run: cargo test --manifest-path engine/jd_godot/bridge_test/Cargo.toml
       - name: cargo clippy (informativo; los avisos no rompen la CI)
         working-directory: engine
+        continue-on-error: true
         run: cargo clippy --workspace --all-targets
 
   # (b) GDExtension: biblioteca jd_godot.dll / libjd_godot.so como artefacto.
@@ -202,25 +203,40 @@ jobs:
             echo "No existe game/tests/run_tests.gd todavía (agente T2); se omite."
           fi
 
-  # (e) App Android de mando: APK de depuración como artefacto.
+  # (e) App Android de mando: APK de depuración como artefacto (si existe android/gradlew).
   android:
     name: android (APK)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: ¿Existe android/gradlew?
+        id: check
+        run: |
+          if [ -f android/gradlew ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "No existe android/gradlew (agente P); se omite."; fi
       - uses: actions/setup-java@v4
+        if: steps.check.outputs.present == 'true'
         with:
           distribution: temurin
           java-version: "17"
       - uses: android-actions/setup-android@v3
+        if: steps.check.outputs.present == 'true'
       - uses: gradle/actions/setup-gradle@v4
-      - name: ./gradlew assembleDebug
+        if: steps.check.outputs.present == 'true'
+      - name: ./gradlew assembleDebug testDebugUnitTest
+        if: steps.check.outputs.present == 'true'
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon --stacktrace assembleDebug testDebugUnitTest
       - uses: actions/upload-artifact@v4
+        if: steps.check.outputs.present == 'true'
         with:
           name: mando-android-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.check.outputs.present == 'true'
+        with:
+          name: mando-android-test-report
+          path: android/app/build/reports/tests/
+          if-no-files-found: ignore
