@@ -21,7 +21,7 @@ static func scan(dirs: PackedStringArray = PackedStringArray(), max_depth: int =
 	var out: Array = []
 	for d: String in dirs:
 		_scan_dir(d, d, max_depth, out)
-	out.sort_custom(_name_less)
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _name_less(a, b))
 	return out
 
 

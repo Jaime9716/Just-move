@@ -66,7 +66,7 @@ func scan() -> Array[Dictionary]:
 			pkg["origin"] = root["origin"]
 			seen[sub] = true
 			result.append(pkg)
-	result.sort_custom(_title_less)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _title_less(a, b))
 	return result
 
 
