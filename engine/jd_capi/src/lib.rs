@@ -17,7 +17,9 @@ pub extern "C" fn jd_now_ns() -> i64 { jd_core::clock::now_ns() }
 pub(crate) unsafe fn write_c_string(s: &str, out: *mut std::os::raw::c_char, len: i32) {
     if out.is_null() || len <= 0 { return; }
     let bytes = s.as_bytes();
-    let n = bytes.len().min(len as usize - 1);
+    let mut n = bytes.len().min(len as usize - 1);
+    // No partir un carácter UTF-8 multibyte al truncar.
+    while n > 0 && n < bytes.len() && !s.is_char_boundary(n) { n -= 1; }
     std::ptr::copy_nonoverlapping(bytes.as_ptr(), out as *mut u8, n);
     *out.add(n) = 0;
 }

@@ -127,7 +127,6 @@ fn load_song_errors_have_message() {
 /// contracts/engine_api.h: "Todas las cadenas son UTF-8". Al truncar el mensaje de error en `err_len`,
 /// `write_c_string` corta por bytes y puede partir un carácter multibyte → cadena no UTF-8.
 #[test]
-#[ignore = "BUG (arquitecto, jd_capi/src/lib.rs write_c_string): el error truncado de jd_engine_load_song puede partir un carácter UTF-8 (corta por bytes)"]
 fn truncated_error_is_valid_utf8() {
     unsafe {
         let e = jd_engine_create();
