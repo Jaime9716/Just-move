@@ -119,7 +119,9 @@ func pairing_code() -> int:
 
 
 func start() -> bool:
-	_last_error = ""
+	# El error de carga de un replay se conserva para que start() lo detecte.
+	if _kind != KIND_REPLAY:
+		_last_error = ""
 	match _kind:
 		KIND_PHONE:
 			if _port <= 0 or _port > 65535:
