@@ -9,7 +9,7 @@
 #   - reproducción: lee una sesión .jsonl (contracts/session_format.md) y la emite en tiempo real.
 #   - grabador: envuelve otra fuente y escribe lo que pasa por poll_samples() en una sesión .jsonl.
 #
-# Reloj: el mismo que MockJDEngine.now_ns() (Time.get_ticks_usec() · 1000).
+# Reloj: EngineFactory.now_ns() (JDEngine.now_ns() si hay extensión; si no Time.get_ticks_usec() · 1000).
 class_name MockJDSource
 extends RefCounted
 
@@ -22,7 +22,7 @@ const MAX_BACKLOG_NS := 2_000_000_000      # no se generan más de 2 s atrasados
 const GRAVITY := 9.81
 const FAKE_DEVICE_ID := 1
 const FAKE_DEVICE_NAME := "Pixel (simulado)"
-const LIMB_NAMES: Array[String] = ["left_hand", "right_hand", "left_foot", "right_foot"]
+const LIMB_NAMES := ["left_hand", "right_hand", "left_foot", "right_foot"]
 const LIMB_NONE := 255
 
 ## Semilla de todas las fuentes simuladas nuevas (cámbiala antes de crearlas).
@@ -69,9 +69,9 @@ func _init() -> void:
 	_rng.seed = default_seed
 
 
-## Reloj monotónico de la simulación (ns).
+## Reloj monotónico (ns): el mismo que usan SongClock y MockJDEngine (EngineFactory.now_ns()).
 static func now_ns() -> int:
-	return Time.get_ticks_usec() * 1000
+	return EngineFactory.now_ns()
 
 
 # ------------------------------------------------------------------ creación (estáticos, como JDSource)
